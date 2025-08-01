@@ -1,0 +1,71 @@
+const express = require('express');
+const path = require('path');
+const cookieParser = require('cookie-parser');
+const cors = require('cors');
+const mongoSanitize = require('express-mongo-sanitize');
+const helmet = require('helmet');
+const xss = require('xss-clean');
+const rateLimit = require('express-rate-limit');
+const hpp = require('hpp');
+const { errorHandler } = require('./utils/errorHandler');
+const connectDB = require('./config/db');
+
+// Load env vars
+require('dotenv').config();
+
+// Connect to database
+connectDB();
+
+const app = express();
+
+// Body parser
+app.use(express.json());
+
+// Cookie parser
+app.use(cookieParser());
+
+// Sanitize data
+app.use(mongoSanitize());
+
+// Set security headers
+app.use(helmet());
+
+// Prevent XSS attacks
+app.use(xss());
+
+// Rate limiting
+const limiter = rateLimit({
+  windowMs: 10 * 60 * 1000, // 10 mins
+  max: 500,  
+});
+// app.use(limiter);
+app.use('/api/v1/auth', limiter);
+
+// Prevent http param pollution
+app.use(hpp());
+ 
+
+app.use((req, res, next) => {
+  console.log(`➡️ Route hit: ${req.method} ${req.originalUrl}`);
+  next();
+});
+
+// Enable CORS
+app.use(cors({
+ origin: 'http://localhost:3000',
+ credentials: true 
+}));
+
+// Set static folder
+app.use(express.static(path.join(__dirname, 'public')));
+
+// Mount routers
+// const routes = require('./routes');
+// app.use('/api/v1', routes);
+
+app.use('/api/v1', require('./routes/index'));
+
+// Error handler (must come after all other middleware/routes)
+app.use(errorHandler);
+
+module.exports = app;
