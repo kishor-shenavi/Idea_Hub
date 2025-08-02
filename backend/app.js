@@ -9,7 +9,7 @@ const rateLimit = require('express-rate-limit');
 const hpp = require('hpp');
 const { errorHandler } = require('./utils/errorHandler');
 const connectDB = require('./config/db');
-
+const routes = require('./routes');
 // Load env vars
 require('dotenv').config();
 
@@ -64,6 +64,9 @@ app.use(express.static(path.join(__dirname, 'public')));
 // app.use('/api/v1', routes);
 
 app.use('/api/v1', require('./routes/index'));
+app.get('/', (req, res) => {
+  res.send('✅ Welcome to Idea Hub Backend');
+});
 
 // Error handler (must come after all other middleware/routes)
 app.use(errorHandler);

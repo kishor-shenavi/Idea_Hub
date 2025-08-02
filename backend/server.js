@@ -72,7 +72,7 @@ io.on('connection', (socket) => {
     socket.join(`project_${projectId}`);
     console.log(`User ${socket.user.id} joined project ${projectId}`);
   });
-
+   
   // ✅ Your sendMessage event now placed correctly
   socket.on('sendProjectMessage', async (data, callback) => {
   try {
@@ -178,13 +178,15 @@ app.get('/socket-health', (req, res) => {
     connections: activeConnections.size
   });
 });
-
+ 
 // Start server
 const PORT = config.PORT || 5000;
 server.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
   console.log(`Socket.io listening for connections`);
 });
+ 
+
 
 // Graceful shutdown
 process.on('SIGTERM', () => {
