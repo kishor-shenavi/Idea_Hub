@@ -27,7 +27,7 @@ useEffect(() => {
 //   auth: { token },
 //   transports: ['websocket'],
 // });
-const newSocket = io(process.env.REACT_APP_SOCKET_URL || 'https://idea-hub-backend.onrender.com', {
+const newSocket = io('https://idea-hub-backend.onrender.com', {
   auth: { token },
   transports: ['websocket'],
 });
