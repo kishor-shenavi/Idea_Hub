@@ -553,7 +553,7 @@ export default function ProjectCard({ project, onDelete, onLike, isMyProject, on
   };
 
   const isOwner = user?.id === (typeof project.createdBy === 'object' ? project.createdBy._id : project.createdBy) && isMyProject;
-  const showChatButton = user && !isOwner;
+  //const showChatButton = user && !isOwner;
 
   return (
     <motion.div 
@@ -643,7 +643,7 @@ export default function ProjectCard({ project, onDelete, onLike, isMyProject, on
               <FiShare2 className="h-5 w-5" />
             </motion.button>
             
-            {showChatButton && (
+            
               <motion.button 
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.9 }}
@@ -653,7 +653,7 @@ export default function ProjectCard({ project, onDelete, onLike, isMyProject, on
               >
                 <FiMessageSquare className="h-5 w-5" />
               </motion.button>
-            )}
+          
           </div>
         </div>
       </div>
