@@ -49,12 +49,14 @@ app.use((req, res, next) => {
   console.log(`➡️ Route hit: ${req.method} ${req.originalUrl}`);
   next();
 });
-
+app.set('trust proxy', 1);
 // Enable CORS
 app.use(cors({
- origin: 'http://localhost:3000',
- credentials: true 
+  origin: 'https://idea-hub-frontend.onrender.com', // ✅ Use your actual frontend deployment URL here
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
 }));
+app.options('*', cors());
 
 // Set static folder
 app.use(express.static(path.join(__dirname, 'public')));
