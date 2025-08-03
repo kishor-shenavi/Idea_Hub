@@ -19,10 +19,14 @@ useEffect(() => {
     console.log('🔌 Previous socket disconnected');
   }
 
-  const newSocket = io('http://localhost:5000', {
-    auth: { token },
-    transports: ['websocket'],
-  });
+  // const newSocket = io('http://localhost:5000', {
+  //   auth: { token },
+  //   transports: ['websocket'],
+  // });
+const newSocket = io(import.meta.env.VITE_SOCKET_URL || 'https://idea-hub-backend.onrender.com', {
+  auth: { token },
+  transports: ['websocket'],
+});
 
   socketRef.current = newSocket;
   setSocket(newSocket);
