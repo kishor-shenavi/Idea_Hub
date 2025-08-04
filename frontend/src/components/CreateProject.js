@@ -133,10 +133,16 @@ LoadingSpinner(true); // Add this
   }
 
   return (
-    <ProjectForm
+    // <ProjectForm
+    //   formData={formData}
+    //   setFormData={setFormData}
+    //   loading={loading}
+    //   onSubmit={handleSubmit}
+    //   isEditing={false}
+    // />
+        <ProjectForm
       formData={formData}
       setFormData={setFormData}
-      loading={loading}
       onSubmit={handleSubmit}
       isEditing={false}
     />

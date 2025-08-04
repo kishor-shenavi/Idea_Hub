@@ -1820,7 +1820,7 @@ export default function Projects() {
 
   const lastProjectRef = useCallback(
     (node) => {
-      if (loading) return;
+      //if (loading) return;
       if (observer.current) observer.current.disconnect();
       observer.current = new IntersectionObserver((entries) => {
         if (
@@ -1833,7 +1833,8 @@ export default function Projects() {
       });
       if (node) observer.current.observe(node);
     },
-    [loading, pagination, page, fetchProjects, activeTab]
+    [//loading, 
+    pagination, page, fetchProjects, activeTab]
   );
 
   let displayedProjects =
