@@ -224,7 +224,7 @@ export default function EditProject() {
     <ProjectForm
       formData={formData}
       setFormData={setFormData}
-      loading={loading}
+      //loading={loading}
       onSubmit={handleSubmit}
       isEditing={true}
     />
