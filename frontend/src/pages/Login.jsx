@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext'
 import { GoogleLogin } from '@react-oauth/google';
 import { jwtDecode } from 'jwt-decode';
 import axios from '../api/axios';
+import LoadingSpinner from '../components/LoadingSpinner';
 export default function Login() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -13,65 +14,19 @@ export default function Login() {
 
   const handleSubmit = async (e) => {
     e.preventDefault()
+      LoadingSpinner(true); // Add this
     try {
       await login(email, password)
     } catch (err) {
       console.log(error)
       setError('Invalid email or password')
-    }
+    }finally {
+    LoadingSpinner(false); // Add this
+  }
   }
  
 
-//   return (
-//     <div className="max-w-md mx-auto mt-10 p-6 bg-white rounded-lg shadow-md">
-//       <h2 className="text-2xl font-bold text-center mb-6">Login</h2>
-//       {error && <div className="text-red-500 mb-4">{error}</div>}
-//       <form onSubmit={handleSubmit}>
-//         <div className="mb-4">
-//           <label className="block text-gray-700 mb-2" htmlFor="email">
-//             Email
-//           </label>
-//           <input
-//             type="email"
-//             id="email"
-//             value={email}
-//             onChange={(e) => setEmail(e.target.value)}
-//             className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
-//             required
-//           />
-//         </div>
-//         <div className="mb-6">
-//           <label className="block text-gray-700 mb-2" htmlFor="password">
-//             Password
-//           </label>
-//           <input
-//             type="password"
-//             id="password"
-//             value={password}
-//             onChange={(e) => setPassword(e.target.value)}
-//             className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
-//             required
-//           />
-//         </div>
-//         <button
-//           type="submit"
-//           className="w-full bg-primary text-blue-500 py-2 px-4 rounded-md hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-primary focus:ring-opacity-50"
-//         >
-//           Login
-//         </button>
-//       </form>
-//       <p className="mt-4 text-center text-gray-600">
-//         Don't have an account?{' '}
-//         <button
-//           onClick={() => navigate('/register')}
-//           className="text-primary hover:underline"
-//         >
-//           Register here
-//         </button>
-//       </p>
-//     </div>
-//   )
-// }
+
  return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-50 to-purple-100 flex items-center justify-center p-4">
       <div className="w-full max-w-md bg-white rounded-xl shadow-2xl overflow-hidden">
@@ -135,7 +90,7 @@ export default function Login() {
   onSuccess={(credentialResponse) => {
     const decoded = jwtDecode(credentialResponse.credential);
     console.log("Decoded Google user:", decoded);
-
+     LoadingSpinner(true); // Add this
     axios.post('/api/v1/auth/google', { token: credentialResponse.credential })
       .then(res => {
         googleLogin(res.data.token);
@@ -148,7 +103,9 @@ const isFirstTime = !res.user.name
           navigate('/projects'); // or home/dashboard
         }
       })
-      .catch(() => setError('Google login failed'));
+      .catch(() => setError('Google login failed'))
+    .finally(() => LoadingSpinner(false)); // Add this
+
   }}
   onError={() => setError("Google login failed")}
 />
@@ -170,3 +127,60 @@ const isFirstTime = !res.user.name
     </div>
   )
 }
+
+
+
+
+
+
+
+//   return (
+//     <div className="max-w-md mx-auto mt-10 p-6 bg-white rounded-lg shadow-md">
+//       <h2 className="text-2xl font-bold text-center mb-6">Login</h2>
+//       {error && <div className="text-red-500 mb-4">{error}</div>}
+//       <form onSubmit={handleSubmit}>
+//         <div className="mb-4">
+//           <label className="block text-gray-700 mb-2" htmlFor="email">
+//             Email
+//           </label>
+//           <input
+//             type="email"
+//             id="email"
+//             value={email}
+//             onChange={(e) => setEmail(e.target.value)}
+//             className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+//             required
+//           />
+//         </div>
+//         <div className="mb-6">
+//           <label className="block text-gray-700 mb-2" htmlFor="password">
+//             Password
+//           </label>
+//           <input
+//             type="password"
+//             id="password"
+//             value={password}
+//             onChange={(e) => setPassword(e.target.value)}
+//             className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+//             required
+//           />
+//         </div>
+//         <button
+//           type="submit"
+//           className="w-full bg-primary text-blue-500 py-2 px-4 rounded-md hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-primary focus:ring-opacity-50"
+//         >
+//           Login
+//         </button>
+//       </form>
+//       <p className="mt-4 text-center text-gray-600">
+//         Don't have an account?{' '}
+//         <button
+//           onClick={() => navigate('/register')}
+//           className="text-primary hover:underline"
+//         >
+//           Register here
+//         </button>
+//       </p>
+//     </div>
+//   )
+// }
