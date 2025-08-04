@@ -245,8 +245,8 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
-import LoadingSpinner from '../components/LoadingSpinner'
-
+//import LoadingSpinner from '../components/LoadingSpinner'
+import { useLoading } from '../context/LoadingContext';
 export default function Register() {
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
@@ -255,19 +255,19 @@ export default function Register() {
   const [error, setError] = useState('')
  const { sendOtpForRegister } = useAuth() 
   const navigate = useNavigate()
-
+ const { setLoading } = useLoading();
  const handleSubmit = async (e) => {
   e.preventDefault();
   try {
-         LoadingSpinner(true);
+         setLoading(true);
     await sendOtpForRegister(email); // Send OTP to this email
     localStorage.setItem('pendingName', name);
     localStorage.setItem('pendingPassword', password);
     localStorage.setItem('pendingRole', 'student');
- LoadingSpinner(false);
+ setLoading(false);
     // ✅ You already navigate to /verify-otp inside sendOtpForRegister
   } catch (err) {
-     LoadingSpinner(false);
+    setLoading(false);
     console.error(err);
     setError('Failed to send OTP. Please try again.');
   }

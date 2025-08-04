@@ -119,13 +119,14 @@ import { useParams, useNavigate } from 'react-router-dom';
 import axios from '../api/axios';
 import { useAuth } from '../context/AuthContext';
 import ProjectForm from './ProjectForm';
-
-import LoadingSpinner from '../components/LoadingSpinner';
+import { useLoading } from '../context/LoadingContext';
+//import LoadingSpinner from '../components/LoadingSpinner';
 export default function EditProject() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
-  const [loading, setLoading] = useState(false);
+  //const [loading, setLoading] = useState(false);
+   const { setLoading } = useLoading();
   const [project, setProject] = useState(null);
   const [formData, setFormData] = useState({
     title: '',
@@ -141,7 +142,8 @@ export default function EditProject() {
   useEffect(() => {
     const fetchProject = async () => {
       try {
-         LoadingSpinner(true); // Add this
+        setLoading(true);
+       //  LoadingSpinner(true); // Add this
         const { data } = await axios.get(`/api/v1/projects/${id}`, {
           headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
         });
@@ -160,7 +162,8 @@ export default function EditProject() {
         console.error('Failed to fetch project', err);
       }
       finally{
-         LoadingSpinner(false);
+        setLoading(false);
+       //  LoadingSpinner(false);
       }
     };
 
@@ -169,8 +172,8 @@ export default function EditProject() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-   // setLoading(true);
-    LoadingSpinner(true);
+   setLoading(true);
+    //LoadingSpinner(true);
     try {
       await axios.put(`/api/v1/projects/${id}`, {
         title: formData.title,
@@ -187,8 +190,8 @@ export default function EditProject() {
     } catch (err) {
       console.error('Failed to update project:', err.response?.data?.message || err.message);
     } finally {
-      //setLoading(false);
-      LoadingSpinner(false);
+      setLoading(false);
+      //LoadingSpinner(false);
     }
   };
 

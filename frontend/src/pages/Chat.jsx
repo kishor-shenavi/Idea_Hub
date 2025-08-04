@@ -1337,7 +1337,8 @@ import { useAuth } from '../context/AuthContext';
 import { useSocket } from '../context/SocketContext';
 import axios from '../api/axios';
 import { FiSend } from 'react-icons/fi';
-import LoadingSpinner from '../components/LoadingSpinner';
+import { useLoading } from '../context/LoadingContext';
+//import LoadingSpinner from '../components/LoadingSpinner';
 export default function Chat() {
   const { projectId } = useParams();
   const { user } = useAuth();
@@ -1347,12 +1348,13 @@ export default function Chat() {
   const [newMessage, setNewMessage] = useState('');
   const [projectOwner, setProjectOwner] = useState(null);
   const messagesEndRef = useRef(null);
-
+ const { setLoading } = useLoading();
   // Fetch messages and project owner
   useEffect(() => {
     const fetchMessages = async () => {
       try {
-        LoadingSpinner(true); // Add this
+        setLoading(true);
+       // LoadingSpinner(true); // Add this
         const res = await axios.get(`/api/v1/chat/${projectId}/messages`);
         setMessages(res.data.data);
 
@@ -1361,7 +1363,7 @@ export default function Chat() {
       } catch (err) {
         console.error('Failed to fetch messages:', err);
       }finally {
-    LoadingSpinner(false); // Add this
+    setLoading(false); // Add this
   }
 
     };

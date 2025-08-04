@@ -1691,6 +1691,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import FilterDropdown from '../components/FilterDropdown';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FiPlus, FiSearch, FiX, FiMessageSquare, FiHeart, FiShare2, FiGithub, FiBook } from 'react-icons/fi';
+import { useLoading } from '../context/LoadingContext';
 import LoadingSpinner from '../components/LoadingSpinner';
 export default function Projects() {
   const [projects, setProjects] = useState([]);
@@ -1710,7 +1711,7 @@ export default function Projects() {
   const observer = useRef();
   const panelRef = useRef();
   const navigate = useNavigate();
-
+ const { setLoading } = useLoading();
   useEffect(() => {
     if (location.state?.showMineOnly) {
       setActiveTab('my');
@@ -1776,8 +1777,8 @@ export default function Projects() {
   const fetchProjects = useCallback(
     async (pageNumber = 1, append = false) => {
       try {
-      //  setLoading(true);
-         LoadingSpinner(true); // Add this
+      setLoading(true);
+        // LoadingSpinner(true); // Add this
         let url = `/api/v1/projects?limit=12&page=${pageNumber}`;
 
         if (searchTerm) url += `&search=${searchTerm}`;
@@ -1807,8 +1808,8 @@ export default function Projects() {
       } catch (error) {
         console.error('Failed to fetch projects:', error);
       } finally {
-        //setLoading(false);
-        LoadingSpinner(false); // Add this
+        setLoading(false);
+        //LoadingSpinner(false); // Add this
       }
     },
     [user, sortBy, searchTerm, selectedCategories, selectedDifficulty]

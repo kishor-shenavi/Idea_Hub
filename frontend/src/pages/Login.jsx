@@ -4,24 +4,25 @@ import { useAuth } from '../context/AuthContext'
 import { GoogleLogin } from '@react-oauth/google';
 import { jwtDecode } from 'jwt-decode';
 import axios from '../api/axios';
-import LoadingSpinner from '../components/LoadingSpinner';
+import { useLoading } from '../context/LoadingContext';
 export default function Login() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const { login,googleLogin} = useAuth()
   const navigate = useNavigate()
+    const { setLoading } = useLoading();
 
   const handleSubmit = async (e) => {
     e.preventDefault()
-      LoadingSpinner(true); // Add this
+      setLoading(true);
     try {
       await login(email, password)
     } catch (err) {
       console.log(error)
       setError('Invalid email or password')
     }finally {
-    LoadingSpinner(false); // Add this
+    setLoading(false);
   }
   }
  
@@ -90,7 +91,7 @@ export default function Login() {
   onSuccess={(credentialResponse) => {
     const decoded = jwtDecode(credentialResponse.credential);
     console.log("Decoded Google user:", decoded);
-     LoadingSpinner(true); // Add this
+     setLoading(true);
     axios.post('/api/v1/auth/google', { token: credentialResponse.credential })
       .then(res => {
         googleLogin(res.data.token);
@@ -104,7 +105,7 @@ const isFirstTime = !res.user.name
         }
       })
       .catch(() => setError('Google login failed'))
-    .finally(() => LoadingSpinner(false)); // Add this
+    .finally(() =>setLoading(false)); // Add this
 
   }}
   onError={() => setError("Google login failed")}

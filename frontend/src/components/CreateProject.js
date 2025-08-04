@@ -77,10 +77,12 @@ import axios from '../api/axios';
 import { useAuth } from '../context/AuthContext';
 import { Link } from 'react-router-dom';
 import ProjectForm from './ProjectForm';
-import LoadingSpinner from '../components/LoadingSpinner';
+//import LoadingSpinner from '../components/LoadingSpinner';
+import { useLoading } from '../context/LoadingContext';
 export default function CreateProject() {
   const navigate = useNavigate();
   const { user } = useAuth();
+   const { setLoading } = useLoading();
   //const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     title: '',
@@ -95,8 +97,8 @@ export default function CreateProject() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-   // setLoading(true);
-LoadingSpinner(true); // Add this
+    setLoading(true);
+ // Add this
     try {
       await axios.post('/api/v1/projects', {
         title: formData.title,
@@ -113,8 +115,8 @@ LoadingSpinner(true); // Add this
     } catch (err) {
       console.error(err.response?.data?.message || 'Failed to create project');
     } finally {
-     // setLoading(false);
-        LoadingSpinner(false); // Add this
+      setLoading(false);
+        //LoadingSpinner(false); // Add this
     }
   };
 

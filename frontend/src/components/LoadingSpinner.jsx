@@ -84,13 +84,14 @@
 
 
 
-
 // components/LoadingSpinner.jsx
 import { motion } from 'framer-motion';
 
-export default function LoadingSpinner() {
+export default function LoadingSpinner({ show }) {
+  if (!show) return null;
+
   return (
-    <div className="flex justify-center items-center h-screen bg-gradient-to-br from-indigo-50 to-purple-50">
+    <div className="fixed inset-0 z-50 flex justify-center items-center bg-black bg-opacity-30 backdrop-blur-sm">
       <motion.div
         animate={{
           rotate: 360,
