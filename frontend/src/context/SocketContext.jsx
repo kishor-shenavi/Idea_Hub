@@ -69,7 +69,7 @@ import io from 'socket.io-client';
 import { useAuth } from './AuthContext';
 
 const SocketContext = createContext();
-
+const SOCKET_URL = process.env.REACT_APP_SOCKET_URL;
 export const SocketProvider = ({ children }) => {
   const { token } = useAuth();
   const [socket, setSocket] = useState(null);
@@ -90,9 +90,9 @@ export const SocketProvider = ({ children }) => {
     }
 
     // Create a new socket with retry mechanism
-    const newSocket = io('https://idea-hub-backend.onrender.com', {
+    const newSocket = io(SOCKET_URL, {
       auth: { token },
-      transports: ['websocket'],
+      transports: ['websocket', 'polling'],
       reconnection: true, // ✅ enable auto-reconnect
       reconnectionAttempts: 5, // ✅ max retries
       reconnectionDelay: 2000, // ✅ wait 2 seconds between retries

@@ -254,7 +254,7 @@
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { FiBook, FiPlus, FiAward, FiCode, FiLayers } from 'react-icons/fi';
-import { motion } from 'framer-motion';
+import { motion, setDragLock } from 'framer-motion';
 import { useInView } from 'react-intersection-observer';
 
 export default function Home() {

@@ -16,7 +16,7 @@ const server = http.createServer(app);
 // Configure Socket.io with production-ready settings
 const io = socketio(server, {
   cors: {
-    origin: config.CLIENT_URL || "*",
+    origin: process.env.CLIENT_URL || "*",
     methods: ["GET", "POST"],
     credentials: true
   },
