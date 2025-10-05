@@ -13,28 +13,23 @@ export default function Login() {
   const { login, googleLogin, checkingLogin } = useAuth();
   const navigate = useNavigate();
 
-  // Normal login
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
     try {
       await login(email, password);
     } catch (err) {
+      console.error(err);
       setError('Invalid email or password');
     }
   };
 
-  // Google login
   const handleGoogleSuccess = async (credentialResponse) => {
     setError('');
     try {
       const token = credentialResponse.credential;
       const { data } = await axios.post('/api/v1/auth/google', { token });
-      await googleLogin(data.token);
-
-      const isFirstTime = !data.user?.name;
-      if (isFirstTime) navigate('/set-username');
-      else navigate('/projects');
+      await googleLogin(data.token); // token handled in AuthContext
     } catch (err) {
       console.error(err);
       setError('Google login failed');
@@ -116,9 +111,6 @@ export default function Login() {
     </div>
   );
 }
-
-
-
 
 
 

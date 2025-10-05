@@ -1,3 +1,4 @@
+
 import { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from '../api/axios';
@@ -10,7 +11,6 @@ export const AuthProvider = ({ children }) => {
   const [checkingLogin, setCheckingLogin] = useState(false);
   const navigate = useNavigate();
 
-  // Logout function
   const logout = useCallback(() => {
     localStorage.removeItem('token');
     setToken(null);
@@ -18,13 +18,12 @@ export const AuthProvider = ({ children }) => {
     navigate('/login');
   }, [navigate]);
 
-  // Fetch logged-in user
   const fetchUser = useCallback(async () => {
     if (!token) return;
     try {
       setCheckingLogin(true);
       const { data } = await axios.get('/api/v1/auth/me', {
-        headers: { Authorization: `Bearer ${token}` }
+        headers: { Authorization: `Bearer ${token}` },
       });
       setUser({ ...data.data, id: data.data._id });
     } catch (error) {
@@ -58,6 +57,7 @@ export const AuthProvider = ({ children }) => {
       localStorage.setItem('token', tokenFromGoogle);
       setToken(tokenFromGoogle);
       await fetchUser();
+      navigate('/projects'); // direct to projects
     } catch (error) {
       console.error('Google login failed:', error);
       logout();
@@ -67,51 +67,6 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  // Update username for first-time Google login
-  const updateUsername = async (newUsername) => {
-    try {
-      const { data } = await axios.put(
-        '/api/v1/auth/update-username',
-        { name: newUsername },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      setUser(prev => ({ ...prev, name: newUsername }));
-      return data;
-    } catch (error) {
-      console.error('Failed to update username:', error);
-      throw error;
-    }
-  };
-
-  // OTP registration helpers
-  const sendOtpForRegister = async (email) => {
-    try {
-      const { data } = await axios.post('/api/v1/auth/sendotp', { email });
-      localStorage.setItem('pendingEmail', email);
-      navigate('/verify-otp');
-      return data;
-    } catch (error) {
-      throw error;
-    }
-  };
-
-  const verifyOtpAndRegister = async (name, email, password, role, otp) => {
-    try {
-      const { data: otpRes } = await axios.post('/api/v1/auth/verifyotp', { email, otp });
-      if (!otpRes.success) throw new Error('OTP verification failed');
-
-      const { data } = await axios.post('/api/v1/auth/register', { name, email, password, role });
-      localStorage.setItem('token', data.token);
-      localStorage.removeItem('pendingEmail');
-      setToken(data.token);
-      await fetchUser();
-      navigate('/projects');
-    } catch (error) {
-      throw error;
-    }
-  };
-
-  // Auto-fetch user on mount
   useEffect(() => {
     if (token) fetchUser();
   }, [token, fetchUser]);
@@ -125,9 +80,6 @@ export const AuthProvider = ({ children }) => {
         login,
         logout,
         googleLogin,
-        updateUsername,
-        sendOtpForRegister,
-        verifyOtpAndRegister
       }}
     >
       {children}
@@ -137,8 +89,6 @@ export const AuthProvider = ({ children }) => {
 
 export const useAuth = () => useContext(AuthContext);
 export { AuthContext };
-
-
 
 
 
