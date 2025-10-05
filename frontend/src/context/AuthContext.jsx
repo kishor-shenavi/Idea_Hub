@@ -1,4 +1,3 @@
-
 import { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from '../api/axios';
@@ -11,7 +10,7 @@ export const AuthProvider = ({ children }) => {
   const [checkingLogin, setCheckingLogin] = useState(false);
   const navigate = useNavigate();
 
-  // Logout
+  // Logout function
   const logout = useCallback(() => {
     localStorage.removeItem('token');
     setToken(null);
@@ -68,7 +67,23 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  // OTP registration
+  // Update username for first-time Google login
+  const updateUsername = async (newUsername) => {
+    try {
+      const { data } = await axios.put(
+        '/api/v1/auth/update-username',
+        { name: newUsername },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setUser(prev => ({ ...prev, name: newUsername }));
+      return data;
+    } catch (error) {
+      console.error('Failed to update username:', error);
+      throw error;
+    }
+  };
+
+  // OTP registration helpers
   const sendOtpForRegister = async (email) => {
     try {
       const { data } = await axios.post('/api/v1/auth/sendotp', { email });
@@ -96,7 +111,7 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  // Fetch user on mount if token exists
+  // Auto-fetch user on mount
   useEffect(() => {
     if (token) fetchUser();
   }, [token, fetchUser]);
@@ -110,6 +125,7 @@ export const AuthProvider = ({ children }) => {
         login,
         logout,
         googleLogin,
+        updateUsername,
         sendOtpForRegister,
         verifyOtpAndRegister
       }}
@@ -121,17 +137,6 @@ export const AuthProvider = ({ children }) => {
 
 export const useAuth = () => useContext(AuthContext);
 export { AuthContext };
-
-
-
-
-
-
-
-
-
-
-
 
 
 
