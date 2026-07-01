@@ -1,172 +1,102 @@
+const jwt = require('jsonwebtoken');
 const User = require('../models/User');
-const ErrorResponse = require('../utils/errorHandler');
+const OTP = require('../models/OTP');
+const { ErrorResponse } = require('../utils/errorHandler');
 const asyncHandler = require('../middlewares/async');
 const sendTokenResponse = require('../utils/responseHandler');
-const otp=require('../models/OTP');
-const sendEmail = require('../utils/mailsender');
-const otpGenerator = require('otp-generator');
 
+// POST /api/v1/auth/sendotp
+exports.sendOtp = asyncHandler(async (req, res, next) => {
+  const { email } = req.body;
+  if (!email) return next(new ErrorResponse('Email is required', 400));
 
-// @desc    Register user
-// @route   POST /api/v1/auth/register
-// @access  Public
+  const existing = await User.findOne({ email });
+  if (existing) return next(new ErrorResponse('Email already registered', 400));
+
+  const generatedOtp = Math.floor(1000 + Math.random() * 9000).toString();
+  await OTP.create({ email, otp: generatedOtp });
+
+  res.status(200).json({ success: true, message: 'OTP sent to your email' });
+});
+
+// POST /api/v1/auth/verifyotp
+exports.verifyOtp = asyncHandler(async (req, res, next) => {
+  const { email, otp } = req.body;
+  if (!email || !otp) return next(new ErrorResponse('Email and OTP are required', 400));
+
+  const record = await OTP.findOne({ email, otp });
+  if (!record) return next(new ErrorResponse('Invalid or expired OTP', 400));
+
+  await OTP.deleteOne({ email });
+  res.status(200).json({ success: true, message: 'OTP verified' });
+});
+
+// POST /api/v1/auth/register
 exports.register = asyncHandler(async (req, res, next) => {
-  const { name, email, password} = req.body;
+  const { name, email, password, year, branch } = req.body;
 
-  // Create user
-  const user = await User.create({
-    name,
-    email,
-    password,
-    role:'student'
-  });
+  const user = await User.create({ name, email, password, year, branch, role: 'student', isVerified: true });
+  sendTokenResponse(user, 201, res);
+});
+
+// POST /api/v1/auth/login
+exports.login = asyncHandler(async (req, res, next) => {
+  const { email, password } = req.body;
+  if (!email || !password) return next(new ErrorResponse('Please provide email and password', 400));
+
+  const user = await User.findOne({ email }).select('+password');
+  if (!user || !user.password) return next(new ErrorResponse('Invalid credentials', 401));
+
+  const isMatch = await user.matchPassword(password);
+  if (!isMatch) return next(new ErrorResponse('Invalid credentials', 401));
 
   sendTokenResponse(user, 200, res);
 });
 
-// @desc    Login user
-// @route   POST /api/v1/auth/login
-// @access  Public
-exports.login = asyncHandler(async (req, res, next) => {
-  const { email, password } = req.body;
+// POST /api/v1/auth/google  (token from @react-oauth/google)
+exports.googleLogin = asyncHandler(async (req, res, next) => {
+  const { token } = req.body;
+  if (!token) return next(new ErrorResponse('Google token required', 400));
 
-  // Validate email & password
-  if (!email || !password) {
-    return next(new ErrorResponse('Please provide an email and password', 400));
-  }
+  const decoded = jwt.decode(token);
+  const { email, name, picture } = decoded;
 
-  // Check for user
-  const user = await User.findOne({ email }).select('+password');
-
+  let user = await User.findOne({ email });
   if (!user) {
-    return next(new ErrorResponse('Invalid credentials', 401));
+    user = await User.create({ name, email, password: Math.random().toString(36), role: 'student', avatar: picture, isVerified: true });
   }
 
-  // Check if password matches
-  const isMatch = await user.matchPassword(password);
-
-  if (!isMatch) {
-    return next(new ErrorResponse('Invalid credentials', 401));
-  }
- // console.log(token);
- sendTokenResponse(user, 200, res);
- 
+  sendTokenResponse(user, 200, res);
 });
 
-
-exports.updateMe = async (req, res) => {
-  const updates = {};
-  if (req.body.name) updates.name = req.body.name;
-
-  const updatedUser = await User.findByIdAndUpdate(req.user.id, updates, {
-    new: true,
-    runValidators: true
-  });
-
-  res.status(200).json({ status: 'success', data: updatedUser });
-};
-
-
-exports.sendOtp = async (req, res) => {
-  try {
-    const { email } = req.body;
-
-    const existingUser = await User.findOne({ email });
-    if (existingUser) {
-      return res.status(400).json({ message: 'Email already registered' });
-    }
-let generatedOtp = Math.floor(1000 + Math.random() * 9000).toString();
-    // let generatedOtp = otpGenerator.generate(4, {
-    //   digits: true,
-    //   upperCaseAlphabet: false,
-    //   lowerCaseAlphabet: false,
-    //   specialChars: false,
-    // });
-
-    // Ensure OTP is numeric (extra validation in case)
-    // if (!/^\d+$/.test(generatedOtp)) {
-    //   generatedOtp = otpGenerator.generate(4, {
-    //     digits: true,
-    //     upperCaseAlphabet: false,
-    //     lowerCaseAlphabet: false,
-    //     specialChars: false,
-    //   });
-    //}
-
-    // Ensure unique OTP
-    let result = await otp.findOne({ otp: generatedOtp });
-    while (result) {
-      let generatedOtp = Math.floor(1000 + Math.random() * 9000).toString();
-      // generatedOtp = otpGenerator.generate(4, {
-      //   digits: true,
-      //   upperCaseAlphabet: false,
-      //   lowerCaseAlphabet: false,
-      //   specialChars: false,
-      // });
-      result = await otp.findOne({ otp: generatedOtp });
-    }
-
-    const createdOtp = await otp.create({ email, otp: generatedOtp });
-
-    return res.status(200).json({
-      success: true,
-      message: "OTP sent to your email.",
-      createdOtp,
-    });
-  } catch (error) {
-    console.error("Error sending OTP:", error);
-    res.status(500).json({ message: "Server Error" });
-  }
-};
-
-
-
-exports.verifyOtp = async (req, res) => {
-  try {
-    const { email, otp: enteredOtp } = req.body;
-
-    if (!email || !enteredOtp) {
-      return res.status(400).json({ message: "Email and OTP are required" });
-    }
-
-    const existingOtp = await otp.findOne({ email, otp: enteredOtp });
-
-    if (!existingOtp) {
-      return res.status(400).json({ success: false, message: "Invalid OTP" });
-    }
-
-    // OTP verified — delete it so it's single-use
-    await otp.deleteOne({ email });
-
-    return res.status(200).json({
-      success: true,
-      message: "OTP verified successfully. You can now register.",
-    });
-  } catch (error) {
-    console.error("Error verifying OTP:", error);
-    return res.status(500).json({ message: "Server error" });
-  }
-};
-
-
-
-
-
-
-
-
-
-
-
-
-// @desc    Get current logged in user
-// @route   GET /api/v1/auth/me
-// @access  Private
+// GET /api/v1/auth/me
 exports.getMe = asyncHandler(async (req, res, next) => {
-  const currentuser = await User.findById(req.user.id);
+  const user = await User.findById(req.user.id);
+  res.status(200).json({ success: true, data: user });
+});
 
-  res.status(200).json({
-    success: true,
-    data: currentuser,
-  });
+// PATCH /api/v1/auth/updateme
+exports.updateMe = asyncHandler(async (req, res, next) => {
+  const allowed = ['name', 'year', 'branch', 'bio', 'linkedinUrl', 'githubUrl', 'interests', 'goalType', 'avatar'];
+  const updates = {};
+  allowed.forEach(field => { if (req.body[field] !== undefined) updates[field] = req.body[field]; });
+
+  const user = await User.findByIdAndUpdate(req.user.id, updates, { new: true, runValidators: true });
+  res.status(200).json({ success: true, data: user });
+});
+
+// PATCH /api/v1/auth/changepassword
+exports.changePassword = asyncHandler(async (req, res, next) => {
+  const { currentPassword, newPassword } = req.body;
+  const user = await User.findById(req.user.id).select('+password');
+
+  if (!user.password) return next(new ErrorResponse('Password change not available for Google accounts', 400));
+
+  const isMatch = await user.matchPassword(currentPassword);
+  if (!isMatch) return next(new ErrorResponse('Current password is incorrect', 401));
+
+  user.password = newPassword;
+  await user.save();
+
+  sendTokenResponse(user, 200, res);
 });

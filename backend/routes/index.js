@@ -1,35 +1,22 @@
-// const express = require('express');
-// const authRoutes = require('./authRoutes');
-// const projectRoutes = require('./projectRoutes');
-// const adminRoutes = require('./adminRoutes');
-// const chatRoutes = require('./chatRoutes');
-// const router = express.Router();
-// app.get("/", (req, res) => {
-//   res.send("✅ Idea Hub backend is running!");
-// });
-// router.use('/auth', authRoutes);
-// router.use('/projects', projectRoutes);
-// router.use('/admin', adminRoutes);
-// router.use('/chat', chatRoutes);
-
-// module.exports = router;
-
 const express = require('express');
 const router = express.Router();
 
-const authRoutes = require('./authRoutes');
-const projectRoutes = require('./projectRoutes');
-const adminRoutes = require('./adminRoutes');
-const chatRoutes = require('./chatRoutes');
+router.use('/auth', require('./authRoutes'));
+router.use('/projects', require('./projectRoutes'));
+router.use('/chat', require('./chatRoutes'));
+router.use('/paths', require('./seniorPathRoutes'));
+router.use('/regrets', require('./regretRoutes'));
+router.use('/internships', require('./internshipRoutes'));
+router.use('/wiki', require('./companyWikiRoutes'));
+router.use('/offers', require('./offerTrackerRoutes'));
+router.use('/buildlogs', require('./buildLogRoutes'));
+router.use('/mentor', require('./mentorRoutes'));
+router.use('/roadmap', require('./roadmapRoutes'));
+router.use('/resume', require('./resumeRoutes'));
+router.use('/admin', require('./adminRoutes'));
 
-// ✅ Health check route
-router.get("/", (req, res) => {
-  res.send("✅ Idea Hub backend is running!");
+router.get('/health', (req, res) => {
+  res.status(200).json({ success: true, message: 'IdeaHub API is running' });
 });
-
-router.use('/auth', authRoutes);
-router.use('/projects', projectRoutes);
-router.use('/admin', adminRoutes);
-router.use('/chat', chatRoutes);
 
 module.exports = router;

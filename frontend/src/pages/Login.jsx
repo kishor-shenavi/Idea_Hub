@@ -1,16 +1,15 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { GoogleLogin } from '@react-oauth/google';
 import axios from '../api/axios';
 import LoadingSpinner from '../components/LoadingSpinner';
 
 export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPass, setShowPass] = useState(false);
   const [error, setError] = useState('');
-
-  const { login, googleLogin, checkingLogin } = useAuth();
+  const { login, googleLogin, loading } = useAuth();
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
@@ -19,92 +18,74 @@ export default function Login() {
     try {
       await login(email, password);
     } catch (err) {
-      console.error(err);
-      setError('Invalid email or password');
+      setError(err.response?.data?.error || 'Invalid email or password');
     }
   };
 
-  const handleGoogleSuccess = async (credentialResponse) => {
+  const handleGoogle = async (credentialResponse) => {
     setError('');
     try {
-      const token = credentialResponse.credential;
-      const { data } = await axios.post('/api/v1/auth/google', { token });
-      await googleLogin(data.token); // token handled in AuthContext
-    } catch (err) {
-      console.error(err);
-      setError('Google login failed');
+      await googleLogin(credentialResponse.credential);
+    } catch {
+      setError('Google login failed. Please try again.');
     }
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 to-purple-100 flex items-center justify-center p-4">
-      {checkingLogin && <LoadingSpinner />}
-      <div className="w-full max-w-md bg-white rounded-xl shadow-2xl overflow-hidden">
-        <div className="bg-gradient-to-r from-indigo-600 to-purple-600 p-6 text-white">
-          <h2 className="text-2xl font-bold text-center">Welcome Back!</h2>
-          <p className="text-center text-indigo-100 mt-1">Login to continue your journey</p>
+    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20, background: 'var(--bg)' }}>
+      <LoadingSpinner show={loading} />
+      <div style={{ width: '100%', maxWidth: 420 }}>
+        {/* Logo */}
+        <div style={{ textAlign: 'center', marginBottom: 32 }}>
+          <div style={{ width: 52, height: 52, borderRadius: 14, background: 'var(--brand)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: 22, fontWeight: 800, color: '#fff', marginBottom: 16 }}>IH</div>
+          <h1 style={{ fontWeight: 800, fontSize: '1.6rem', letterSpacing: -0.5 }}>Welcome back</h1>
+          <p style={{ color: 'var(--muted)', fontSize: '0.9rem', marginTop: 6 }}>Sign in to continue to IdeaHub</p>
         </div>
 
-        <div className="p-6">
-          {error && (
-            <div className="mb-4 bg-red-50 text-red-600 p-3 rounded-md flex items-center">
-              <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-              {error}
-            </div>
-          )}
+        <div className="card" style={{ padding: 28 }}>
+          {error && <div className="error-msg" style={{ marginBottom: 16 }}>{error}</div>}
 
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">Email</label>
-              <input
-                type="email"
-                id="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition"
-                required
-                placeholder="your@email.com"
-              />
+              <label className="label">Email address</label>
+              <input className="input" type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="you@email.com" required autoComplete="email" autoFocus />
             </div>
-
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">Password</label>
-              <input
-                type="password"
-                id="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition"
-                required
-                placeholder="••••••••"
-              />
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
+                <label className="label" style={{ margin: 0 }}>Password</label>
+              </div>
+              <div style={{ position: 'relative' }}>
+                <input className="input" type={showPass ? 'text' : 'password'} value={password} onChange={e => setPassword(e.target.value)} placeholder="••••••••" required autoComplete="current-password" style={{ paddingRight: 40 }} />
+                <button type="button" onClick={() => setShowPass(!showPass)} style={{ position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--muted)', padding: 0, fontSize: 13 }}>
+                  {showPass ? 'Hide' : 'Show'}
+                </button>
+              </div>
             </div>
-
-            <button
-              type="submit"
-              className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white py-2 px-4 rounded-lg hover:from-indigo-700 hover:to-purple-700 transition-all shadow-md hover:shadow-lg"
-            >
-              Login
+            <button type="submit" className="btn btn-primary" disabled={loading} style={{ width: '100%', justifyContent: 'center', padding: '12px 20px' }}>
+              {loading ? <><span className="spinner" style={{ width: 16, height: 16, borderWidth: 2 }} /> Signing in…</> : 'Sign in'}
             </button>
           </form>
 
-          <div className="my-6 flex items-center justify-center">
-            <GoogleLogin
-              onSuccess={handleGoogleSuccess}
-              onError={() => setError('Google login failed')}
-            />
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12, margin: '20px 0' }}>
+            <div style={{ flex: 1, height: 1, background: 'var(--border)' }} />
+            <span style={{ fontSize: '0.8rem', color: 'var(--muted)' }}>or</span>
+            <div style={{ flex: 1, height: 1, background: 'var(--border)' }} />
           </div>
 
-          <p className="mt-4 text-center text-gray-600">
-            Don't have an account?{' '}
-            <button
-              onClick={() => navigate('/register')}
-              className="text-indigo-600 hover:text-indigo-800 font-medium hover:underline"
-            >
-              Register here
-            </button>
+          <GoogleButton onClick={() => {
+            // Load Google SDK dynamically
+            if (window.google) {
+              window.google.accounts.id.initialize({
+                client_id: process.env.REACT_APP_GOOGLE_CLIENT_ID,
+                callback: handleGoogle,
+              });
+              window.google.accounts.id.prompt();
+            }
+          }} />
+
+          <p style={{ textAlign: 'center', marginTop: 20, fontSize: '0.875rem', color: 'var(--muted)' }}>
+            No account?{' '}
+            <Link to="/register" style={{ color: 'var(--brand)', fontWeight: 600, textDecoration: 'none' }}>Create one free</Link>
           </p>
         </div>
       </div>
@@ -112,212 +93,19 @@ export default function Login() {
   );
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-//corrected 
-
-
-// import { useState } from 'react'
-// import { useNavigate } from 'react-router-dom'
-// import { useAuth } from '../context/AuthContext'
-// import { GoogleLogin } from '@react-oauth/google';
-// import { jwtDecode } from 'jwt-decode';
-// import axios from '../api/axios';
-// import { useLoading } from '../context/LoadingContext';
-// export default function Login() {
-//   const [email, setEmail] = useState('')
-//   const [password, setPassword] = useState('')
-//   const [error, setError] = useState('')
-//   const { login,googleLogin} = useAuth()
-//   const navigate = useNavigate()
-//     const { setLoading } = useLoading();
-
-//   const handleSubmit = async (e) => {
-//     e.preventDefault()
-//       setLoading(true);
-//     try {
-//       await login(email, password)
-//     } catch (err) {
-//       console.log(error)
-//       setError('Invalid email or password')
-//     }finally {
-//     setLoading(false);
-//   }
-//   }
- 
-
-
-//  return (
-//     <div className="min-h-screen bg-gradient-to-br from-indigo-50 to-purple-100 flex items-center justify-center p-4">
-//       <div className="w-full max-w-md bg-white rounded-xl shadow-2xl overflow-hidden">
-//         <div className="bg-gradient-to-r from-indigo-600 to-purple-600 p-6 text-white">
-//           <h2 className="text-2xl font-bold text-center">Welcome Back!</h2>
-//           <p className="text-center text-indigo-100 mt-1">Login to continue your journey</p>
-//         </div>
-        
-//         <div className="p-6">
-//           {error && (
-//             <div className="mb-4 bg-red-50 text-red-600 p-3 rounded-md flex items-center">
-//               <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-//                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-//               </svg>
-//               {error}
-//             </div>
-//           )}
-          
-//           <form onSubmit={handleSubmit} className="space-y-4">
-//             <div>
-//               <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="email">
-//                 Email
-//               </label>
-//               <div className="relative">
-//                 <input
-//                   type="email"
-//                   id="email"
-//                   value={email}
-//                   onChange={(e) => setEmail(e.target.value)}
-//                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition"
-//                   required
-//                   placeholder="your@email.com"
-//                 />
-//               </div>
-//             </div>
-            
-//             <div>
-//               <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="password">
-//                 Password
-//               </label>
-//               <input
-//                 type="password"
-//                 id="password"
-//                 value={password}
-//                 onChange={(e) => setPassword(e.target.value)}
-//                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition"
-//                 required
-//                 placeholder="••••••••"
-//               />
-//             </div>
-            
-//             <button
-//               type="submit"
-//               className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white py-2 px-4 rounded-lg hover:from-indigo-700 hover:to-purple-700 transition-all shadow-md hover:shadow-lg"
-//             >
-//               Login
-//             </button>
-//           </form>
-//           <div className="my-6 flex items-center justify-center">
-//  <GoogleLogin
-//   onSuccess={(credentialResponse) => {
-//     const decoded = jwtDecode(credentialResponse.credential);
-//     console.log("Decoded Google user:", decoded);
-//      setLoading(true);
-//     axios.post('/api/v1/auth/google', { token: credentialResponse.credential })
-//       .then(res => {
-//         googleLogin(res.data.token);
-// const isFirstTime = !res.user.name 
-
-//         // 👇 Check if user needs to set a username
-//         if (isFirstTime) {
-//           navigate('/set-username');
-//         } else {
-//           navigate('/projects'); // or home/dashboard
-//         }
-//       })
-//       .catch(() => setError('Google login failed'))
-//     .finally(() =>setLoading(false)); // Add this
-
-//   }}
-//   onError={() => setError("Google login failed")}
-// />
-
-// </div>
-
-          
-//           <p className="mt-4 text-center text-gray-600">
-//             Don't have an account?{' '}
-//             <button
-//               onClick={() => navigate('/register')}
-//               className="text-indigo-600 hover:text-indigo-800 font-medium hover:underline"
-//             >
-//               Register here
-//             </button>
-//           </p>
-//         </div>
-//       </div>
-//     </div>
-//   )
-// }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-//   return (
-//     <div className="max-w-md mx-auto mt-10 p-6 bg-white rounded-lg shadow-md">
-//       <h2 className="text-2xl font-bold text-center mb-6">Login</h2>
-//       {error && <div className="text-red-500 mb-4">{error}</div>}
-//       <form onSubmit={handleSubmit}>
-//         <div className="mb-4">
-//           <label className="block text-gray-700 mb-2" htmlFor="email">
-//             Email
-//           </label>
-//           <input
-//             type="email"
-//             id="email"
-//             value={email}
-//             onChange={(e) => setEmail(e.target.value)}
-//             className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
-//             required
-//           />
-//         </div>
-//         <div className="mb-6">
-//           <label className="block text-gray-700 mb-2" htmlFor="password">
-//             Password
-//           </label>
-//           <input
-//             type="password"
-//             id="password"
-//             value={password}
-//             onChange={(e) => setPassword(e.target.value)}
-//             className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
-//             required
-//           />
-//         </div>
-//         <button
-//           type="submit"
-//           className="w-full bg-primary text-blue-500 py-2 px-4 rounded-md hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-primary focus:ring-opacity-50"
-//         >
-//           Login
-//         </button>
-//       </form>
-//       <p className="mt-4 text-center text-gray-600">
-//         Don't have an account?{' '}
-//         <button
-//           onClick={() => navigate('/register')}
-//           className="text-primary hover:underline"
-//         >
-//           Register here
-//         </button>
-//       </p>
-//     </div>
-//   )
-// }
+function GoogleButton({ onClick }) {
+  return (
+    <button type="button" onClick={onClick} style={{
+      width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10,
+      padding: '11px 20px', border: '1.5px solid var(--border)', borderRadius: 8,
+      background: 'var(--surface)', cursor: 'pointer', fontFamily: 'var(--font)',
+      fontWeight: 600, fontSize: '0.875rem', color: 'var(--text)', transition: 'background 0.15s',
+    }}
+    onMouseEnter={e => e.currentTarget.style.background = 'var(--surface2)'}
+    onMouseLeave={e => e.currentTarget.style.background = 'var(--surface)'}
+    >
+      <svg width="18" height="18" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+      Continue with Google
+    </button>
+  );
+}

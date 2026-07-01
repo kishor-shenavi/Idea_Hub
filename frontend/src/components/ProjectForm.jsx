@@ -1,690 +1,92 @@
-// import { useNavigate, useParams } from 'react-router-dom';
+import { useState } from 'react';
 
-// export default function ProjectForm({
-//   formData,
-//   setFormData,
-//   loading,
-//   onSubmit,
-//   isEditing = false,
-// }) {
-//   const navigate = useNavigate();
-//   const { id } = useParams();
-//   const categories = ['web', 'mobile', 'desktop', 'ai', 'iot', 'other'];
-//   const difficulties = ['beginner', 'intermediate', 'advanced'];
-//   const handleChange = (e) => {
-//     const { name, value } = e.target;
-//     setFormData((prev) => ({ ...prev, [name]: value }));
-//   };
+const CATEGORIES = ['web', 'mobile', 'desktop', 'ai', 'iot', 'other'];
+const DIFFICULTIES = ['beginner', 'intermediate', 'advanced'];
 
-//   const handleTagAdd = () => {
-//     if (formData.currentTag && !formData.tags.includes(formData.currentTag)) {
-//       setFormData((prev) => ({
-//         ...prev,
-//         tags: [...prev.tags, prev.currentTag],
-//         currentTag: '',
-//       }));
-//     }
-//   };
+export default function ProjectForm({ formData, setFormData, onSubmit, isEditing, loading }) {
+  const [tagInput, setTagInput] = useState('');
 
-//   const handleTagRemove = (tagToRemove) => {
-//     setFormData((prev) => ({
-//       ...prev,
-//       tags: prev.tags.filter((tag) => tag !== tagToRemove),
-//     }));
-//   };
-
-//   return (
-//     <div className="max-w-2xl mx-auto py-8 px-4">
-//       <h1 className="text-3xl font-bold text-blue-500 mb-6">
-//         {isEditing ? 'Edit Project' : 'Create New Project'}
-//       </h1>
-//       <form onSubmit={onSubmit} className="space-y-4">
-//         <div>
-//           <label htmlFor="title" className="block text-sm font-medium text-gray-700">
-//             Title*
-//           </label>
-//           <input
-//             type="text"
-//             id="title"
-//             name="title"
-//             value={formData.title}
-//             onChange={handleChange}
-//             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary"
-//             required
-//             maxLength={100}
-//           />
-//           <p className="text-xs text-gray-500 mt-1">Max 100 characters</p>
-//         </div>
-
-//         <div>
-//           <label htmlFor="description" className="block text-sm font-medium text-gray-700">
-//             Description*
-//           </label>
-//           <textarea
-//             id="description"
-//             name="description"
-//             rows={6}
-//             value={formData.description}
-//             onChange={handleChange}
-//             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary"
-//             required
-//           />
-//         </div>
-
-//         <div>
-//           <label htmlFor="currentTag" className="block text-sm font-medium text-gray-700">
-//             Tags*
-//           </label>
-//           <div className="flex mt-1">
-//             <input
-//               type="text"
-//               id="currentTag"
-//               value={formData.currentTag}
-//               onChange={(e) => setFormData((prev) => ({ ...prev, currentTag: e.target.value }))}
-//               className="block w-full rounded-l-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary"
-//               placeholder="Add a tag"
-//             />
-//             <button
-//               type="button"
-//               onClick={handleTagAdd}
-//               className="px-4 py-2 bg-gray-200 text-gray-700 rounded-r-md hover:bg-gray-300"
-//             >
-//               Add
-//             </button>
-//           </div>
-//           <div className="flex flex-wrap gap-2 mt-2">
-//             {formData.tags.map((tag) => (
-//               <span
-//                 key={tag}
-//                 className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800"
-//               >
-//                 {tag}
-//                 <button
-//                   type="button"
-//                   onClick={() => handleTagRemove(tag)}
-//                   className="ml-1.5 inline-flex items-center justify-center w-4 h-4 rounded-full text-blue-400 hover:bg-blue-200 hover:text-blue-500"
-//                 >
-//                   ×
-//                 </button>
-//               </span>
-//             ))}
-//           </div>
-//           <p className="text-xs text-gray-500 mt-1">Add at least one tag</p>
-//         </div>
-
-//         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-//           <div>
-//             <label htmlFor="category" className="block text-sm font-medium text-gray-700">
-//               Category*
-//             </label>
-//             <select
-//               id="category"
-//               name="category"
-//               value={formData.category}
-//               onChange={handleChange}
-//               className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary"
-//               required
-//             >
-//               {categories.map((cat) => (
-//                 <option key={cat} value={cat}>
-//                   {cat.charAt(0).toUpperCase() + cat.slice(1)}
-//                 </option>
-//               ))}
-//             </select>
-//           </div>
-
-//           <div>
-//             <label htmlFor="difficulty" className="block text-sm font-medium text-gray-700">
-//               Difficulty
-//             </label>
-//             <select
-//               id="difficulty"
-//               name="difficulty"
-//               value={formData.difficulty}
-//               onChange={handleChange}
-//               className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary"
-//             >
-//               {difficulties.map((diff) => (
-//                 <option key={diff} value={diff}>
-//                   {diff.charAt(0).toUpperCase() + diff.slice(1)}
-//                 </option>
-//               ))}
-//             </select>
-//           </div>
-//         </div>
-
-//         <div>
-//           <label htmlFor="githubUrl" className="block text-sm font-medium text-gray-700">
-//             GitHub URL
-//           </label>
-//           <input
-//             type="url"
-//             id="githubUrl"
-//             name="githubUrl"
-//             value={formData.githubUrl}
-//             onChange={handleChange}
-//             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary"
-//             placeholder="https://github.com/yourusername/yourproject"
-//           />
-//         </div>
-
-//         <div>
-//           <label htmlFor="documentationUrl" className="block text-sm font-medium text-gray-700">
-//             Documentation URL
-//           </label>
-//           <input
-//             type="url"
-//             id="documentationUrl"
-//             name="documentationUrl"
-//             value={formData.documentationUrl}
-//             onChange={handleChange}
-//             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary"
-//             placeholder="https://your-docs-site.com"
-//           />
-//         </div>
-
-//         <div className="flex space-x-4">
-//           <button
-//             type="submit"
-//             disabled={loading || formData.tags.length === 0}
-//             className="bg-primary text-blue-700 py-2 px-4 rounded-md hover:bg-primary-dark disabled:opacity-50"
-//           >
-//             {loading ? (isEditing ? 'Updating...' : 'Creating...') : isEditing ? 'Update Project' : 'Create Project'}
-//           </button>
-//           {isEditing && (
-//             <button
-//               type="button"
-//               onClick={() => navigate(`/projects/${id}`)}
-//               className="bg-gray-200 text-gray-800 py-2 px-4 rounded-md hover:bg-gray-300"
-//             >
-//               Cancel
-//             </button>
-//           )}
-//         </div>
-//       </form>
-//     </div>
-//   );
-// }
-
-
-
-
-
-
-
-
-
-
-// //all good
-
-// import { useNavigate, useParams } from 'react-router-dom';
-
-// export default function ProjectForm({
-//   formData,
-//   setFormData,
-//   loading,
-//   onSubmit,
-//   isEditing = false,
-// }) {
-//   const navigate = useNavigate();
-//   const { id } = useParams();
-//   const categories = ['web', 'mobile', 'desktop', 'ai', 'iot', 'other'];
-//   const difficulties = ['beginner', 'intermediate', 'advanced'];
-
-//   const handleChange = (e) => {
-//     const { name, value } = e.target;
-//     setFormData((prev) => ({ ...prev, [name]: value }));
-//   };
-
-//   const handleTagAdd = () => {
-//     if (formData.currentTag && !formData.tags.includes(formData.currentTag)) {
-//       setFormData((prev) => ({
-//         ...prev,
-//         tags: [...prev.tags, prev.currentTag],
-//         currentTag: '',
-//       }));
-//     }
-//   };
-
-//   const handleTagRemove = (tagToRemove) => {
-//     setFormData((prev) => ({
-//       ...prev,
-//       tags: prev.tags.filter((tag) => tag !== tagToRemove),
-//     }));
-//   };
-
-//   return (
-//     <div className="min-h-screen bg-gradient-to-br from-indigo-50 to-purple-50 py-12 px-4 sm:px-6 lg:px-8">
-//       <div className="max-w-3xl mx-auto bg-white rounded-xl shadow-lg overflow-hidden">
-//         <div className="bg-gradient-to-r from-indigo-600 to-purple-600 p-6 text-white">
-//           <h1 className="text-2xl font-bold">
-//             {isEditing ? 'Edit Project' : 'Create New Project'}
-//           </h1>
-//           <p className="text-indigo-100 mt-1">
-//             {isEditing ? 'Update your project details' : 'Share your amazing project with the community'}
-//           </p>
-//         </div>
-
-//         <form onSubmit={onSubmit} className="p-6 space-y-6">
-//           <div>
-//             <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-1">
-//               Title*
-//             </label>
-//             <input
-//               type="text"
-//               id="title"
-//               name="title"
-//               value={formData.title}
-//               onChange={handleChange}
-//               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition"
-//               required
-//               maxLength={100}
-//               placeholder="My Awesome Project"
-//             />
-//             <p className="text-xs text-gray-500 mt-1">Max 100 characters</p>
-//           </div>
-
-//           <div>
-//             <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">
-//               Description*
-//             </label>
-//             <textarea
-//               id="description"
-//               name="description"
-//               rows={6}
-//               value={formData.description}
-//               onChange={handleChange}
-//               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition"
-//               required
-//               placeholder="Describe your project in detail..."
-//             />
-//           </div>
-
-//           <div>
-//             <label htmlFor="currentTag" className="block text-sm font-medium text-gray-700 mb-1">
-//               Tags*
-//             </label>
-//             <div className="flex">
-//               <input
-//                 type="text"
-//                 id="currentTag"
-//                 value={formData.currentTag}
-//                 onChange={(e) => setFormData((prev) => ({ ...prev, currentTag: e.target.value }))}
-//                 className="flex-1 px-4 py-3 border border-gray-300 rounded-l-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition"
-//                 placeholder="Add a tag (e.g., React, Node.js)"
-//               />
-//               <button
-//                 type="button"
-//                 onClick={handleTagAdd}
-//                 className="px-4 bg-indigo-600 text-white rounded-r-lg hover:bg-indigo-700 transition-colors"
-//               >
-//                 Add
-//               </button>
-//             </div>
-//             <div className="flex flex-wrap gap-2 mt-3">
-//               {formData.tags.map((tag) => (
-//                 <span
-//                   key={tag}
-//                   className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-indigo-100 text-indigo-800"
-//                 >
-//                   {tag}
-//                   <button
-//                     type="button"
-//                     onClick={() => handleTagRemove(tag)}
-//                     className="ml-2 text-indigo-400 hover:text-indigo-600"
-//                   >
-//                     ×
-//                   </button>
-//                 </span>
-//               ))}
-//             </div>
-//             <p className="text-xs text-gray-500 mt-1">Add at least one tag</p>
-//           </div>
-
-//           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-//             <div>
-//               <label htmlFor="category" className="block text-sm font-medium text-gray-700 mb-1">
-//                 Category*
-//               </label>
-//               <select
-//                 id="category"
-//                 name="category"
-//                 value={formData.category}
-//                 onChange={handleChange}
-//                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition"
-//                 required
-//               >
-//                 {categories.map((cat) => (
-//                   <option key={cat} value={cat}>
-//                     {cat.charAt(0).toUpperCase() + cat.slice(1)}
-//                   </option>
-//                 ))}
-//               </select>
-//             </div>
-
-//             <div>
-//               <label htmlFor="difficulty" className="block text-sm font-medium text-gray-700 mb-1">
-//                 Difficulty
-//               </label>
-//               <select
-//                 id="difficulty"
-//                 name="difficulty"
-//                 value={formData.difficulty}
-//                 onChange={handleChange}
-//                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition"
-//               >
-//                 {difficulties.map((diff) => (
-//                   <option key={diff} value={diff}>
-//                     {diff.charAt(0).toUpperCase() + diff.slice(1)}
-//                   </option>
-//                 ))}
-//               </select>
-//             </div>
-//           </div>
-
-//           <div>
-//             <label htmlFor="githubUrl" className="block text-sm font-medium text-gray-700 mb-1">
-//               GitHub URL
-//             </label>
-//             <input
-//               type="url"
-//               id="githubUrl"
-//               name="githubUrl"
-//               value={formData.githubUrl}
-//               onChange={handleChange}
-//               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition"
-//               placeholder="https://github.com/yourusername/yourproject"
-//             />
-//           </div>
-
-//           <div>
-//             <label htmlFor="documentationUrl" className="block text-sm font-medium text-gray-700 mb-1">
-//               Documentation URL
-//             </label>
-//             <input
-//               type="url"
-//               id="documentationUrl"
-//               name="documentationUrl"
-//               value={formData.documentationUrl}
-//               onChange={handleChange}
-//               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition"
-//               placeholder="https://your-docs-site.com"
-//             />
-//           </div>
-
-//           <div className="flex space-x-4 pt-4">
-//             <button
-//               type="submit"
-//               disabled={loading || formData.tags.length === 0}
-//               className={`flex-1 bg-gradient-to-r from-indigo-600 to-purple-600 text-white py-3 px-6 rounded-lg hover:from-indigo-700 hover:to-purple-700 transition-all shadow-md hover:shadow-lg ${(loading || formData.tags.length === 0) ? 'opacity-50 cursor-not-allowed' : ''}`}
-//             >
-//               {loading ? (
-//                 <span className="flex items-center justify-center">
-//                   <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-//                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-//                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-//                   </svg>
-//                   {isEditing ? 'Updating...' : 'Creating...'}
-//                 </span>
-//               ) : isEditing ? 'Update Project' : 'Create Project'}
-//             </button>
-
-//             {isEditing && (
-//               <button
-//                 type="button"
-//                 onClick={() => navigate(`/projects/${id}`)}
-//                 className="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
-//               >
-//                 Cancel
-//               </button>
-//             )}
-//           </div>
-//         </form>
-//       </div>
-//     </div>
-//   );
-// }
-
-
-
-
-
-import { useNavigate, useParams } from 'react-router-dom';
-
-export default function ProjectForm({
-  formData,
-  setFormData,
-  loading,
-  onSubmit,
-  isEditing = false,
-}) {
-  const navigate = useNavigate();
-  const { id } = useParams();
-  const categories = ['web', 'mobile', 'desktop', 'ai', 'iot', 'other'];
-  const difficulties = ['beginner', 'intermediate', 'advanced'];
-
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
-  };
-
-  const handleTagAdd = () => {
-    if (formData.currentTag && !formData.tags.includes(formData.currentTag)) {
-      setFormData((prev) => ({
-        ...prev,
-        tags: [...prev.tags, prev.currentTag],
-        currentTag: '',
-      }));
+  const addTag = (e) => {
+    e.preventDefault();
+    const t = tagInput.trim().toLowerCase();
+    if (t && !formData.tags.includes(t) && formData.tags.length < 10) {
+      setFormData(p => ({ ...p, tags: [...p.tags, t] }));
+      setTagInput('');
     }
   };
 
-  const handleTagRemove = (tagToRemove) => {
-    setFormData((prev) => ({
-      ...prev,
-      tags: prev.tags.filter((tag) => tag !== tagToRemove),
-    }));
-  };
-
-  const handleTagKeyDown = (e) => {
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      handleTagAdd();
-    }
-  };
+  const removeTag = (tag) => setFormData(p => ({ ...p, tags: p.tags.filter(t => t !== tag) }));
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 to-purple-50 py-8 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-3xl mx-auto bg-white rounded-xl shadow-lg overflow-hidden">
-        <div className="bg-gradient-to-r from-indigo-600 to-purple-600 p-4 sm:p-6 text-white">
-          <h1 className="text-xl sm:text-2xl font-bold">
-            {isEditing ? 'Edit Project' : 'Create New Project'}
-          </h1>
-          <p className="text-indigo-100 mt-1 text-sm sm:text-base">
-            {isEditing ? 'Update your project details' : 'Share your amazing project with the community'}
-          </p>
-        </div>
+    <div className="page-container" style={{ maxWidth: 700 }}>
+      <div className="card" style={{ padding: 32 }}>
+        <h1 style={{ fontWeight: 800, fontSize: '1.5rem', marginBottom: 8 }}>{isEditing ? 'Edit project' : 'Add a project idea'}</h1>
+        <p style={{ color: 'var(--muted)', marginBottom: 28, fontSize: '0.9rem' }}>
+          {isEditing ? 'Update your project details.' : 'Share a project idea for other students to explore and build.'}
+        </p>
 
-        <form onSubmit={onSubmit} className="p-4 sm:p-6 space-y-4 sm:space-y-6">
+        <form onSubmit={onSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
           <div>
-            <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-1">
-              Title*
-            </label>
-            <input
-              type="text"
-              id="title"
-              name="title"
-              value={formData.title}
-              onChange={handleChange}
-              className="w-full px-3 sm:px-4 py-2 sm:py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition"
-              required
-              maxLength={100}
-              placeholder="My Awesome Project"
-            />
-            <p className="text-xs text-gray-500 mt-1">Max 100 characters</p>
+            <label className="label">Title *</label>
+            <input className="input" value={formData.title} onChange={e => setFormData(p => ({ ...p, title: e.target.value }))} placeholder="e.g. Real-time Chat App with Socket.io" required maxLength={100} />
           </div>
 
           <div>
-            <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">
-              Description*
-            </label>
-            <textarea
-              id="description"
-              name="description"
-              rows={5}
-              value={formData.description}
-              onChange={handleChange}
-              className="w-full px-3 sm:px-4 py-2 sm:py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition"
-              required
-              placeholder="Describe your project in detail..."
-            />
+            <label className="label">Description *</label>
+            <textarea className="input" value={formData.description} onChange={e => setFormData(p => ({ ...p, description: e.target.value }))} placeholder="Describe the project — what it does, what you can learn, how to build it…" required rows={4} style={{ resize: 'vertical' }} />
           </div>
 
-          <div>
-            <label htmlFor="currentTag" className="block text-sm font-medium text-gray-700 mb-1">
-              Tags*
-            </label>
-            <div className="flex">
-              <input
-                type="text"
-                id="currentTag"
-                value={formData.currentTag}
-                onChange={(e) => setFormData((prev) => ({ ...prev, currentTag: e.target.value }))}
-                onKeyDown={handleTagKeyDown}
-                className="flex-1 px-3 sm:px-4 py-2 sm:py-3 border border-gray-300 rounded-l-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition"
-                placeholder="Add a tag (e.g., React, Node.js)"
-              />
-              <button
-                type="button"
-                onClick={handleTagAdd}
-                className="px-3 sm:px-4 bg-indigo-600 text-white rounded-r-lg hover:bg-indigo-700 transition-colors"
-              >
-                Add
-              </button>
-            </div>
-            <div className="flex flex-wrap gap-2 mt-2">
-              {formData.tags.map((tag) => (
-                <span
-                  key={tag}
-                  className="inline-flex items-center px-2 py-1 rounded-full text-xs sm:text-sm font-medium bg-indigo-100 text-indigo-800"
-                >
-                  {tag}
-                  <button
-                    type="button"
-                    onClick={() => handleTagRemove(tag)}
-                    className="ml-1 text-indigo-400 hover:text-indigo-600"
-                  >
-                    ×
-                  </button>
-                </span>
-              ))}
-            </div>
-            <p className="text-xs text-gray-500 mt-1">Add at least one tag</p>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+          <div className="grid-2">
             <div>
-              <label htmlFor="category" className="block text-sm font-medium text-gray-700 mb-1">
-                Category*
-              </label>
-              <select
-                id="category"
-                name="category"
-                value={formData.category}
-                onChange={handleChange}
-                className="w-full px-3 sm:px-4 py-2 sm:py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition"
-                required
-              >
-                {categories.map((cat) => (
-                  <option key={cat} value={cat}>
-                    {cat.charAt(0).toUpperCase() + cat.slice(1)}
-                  </option>
-                ))}
+              <label className="label">Category *</label>
+              <select className="input" value={formData.category} onChange={e => setFormData(p => ({ ...p, category: e.target.value }))}>
+                {CATEGORIES.map(c => <option key={c} value={c}>{c.charAt(0).toUpperCase() + c.slice(1)}</option>)}
               </select>
             </div>
-
             <div>
-              <label htmlFor="difficulty" className="block text-sm font-medium text-gray-700 mb-1">
-                Difficulty
-              </label>
-              <select
-                id="difficulty"
-                name="difficulty"
-                value={formData.difficulty}
-                onChange={handleChange}
-                className="w-full px-3 sm:px-4 py-2 sm:py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition"
-              >
-                {difficulties.map((diff) => (
-                  <option key={diff} value={diff}>
-                    {diff.charAt(0).toUpperCase() + diff.slice(1)}
-                  </option>
-                ))}
+              <label className="label">Difficulty *</label>
+              <select className="input" value={formData.difficulty} onChange={e => setFormData(p => ({ ...p, difficulty: e.target.value }))}>
+                {DIFFICULTIES.map(d => <option key={d} value={d}>{d.charAt(0).toUpperCase() + d.slice(1)}</option>)}
               </select>
             </div>
           </div>
 
           <div>
-            <label htmlFor="githubUrl" className="block text-sm font-medium text-gray-700 mb-1">
-              GitHub URL
-            </label>
-            <input
-              type="url"
-              id="githubUrl"
-              name="githubUrl"
-              value={formData.githubUrl}
-              onChange={handleChange}
-              className="w-full px-3 sm:px-4 py-2 sm:py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition"
-              placeholder="https://github.com/yourusername/yourproject"
-            />
-          </div>
-
-          <div>
-            <label htmlFor="documentationUrl" className="block text-sm font-medium text-gray-700 mb-1">
-              Documentation URL
-            </label>
-            <input
-              type="url"
-              id="documentationUrl"
-              name="documentationUrl"
-              value={formData.documentationUrl}
-              onChange={handleChange}
-              className="w-full px-3 sm:px-4 py-2 sm:py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition"
-              placeholder="https://your-docs-site.com"
-            />
-          </div>
-
-          <div className="flex flex-col sm:flex-row sm:space-x-4 space-y-4 sm:space-y-0 pt-4">
-            <button
-              type="submit"
-              disabled={loading || formData.tags.length === 0}
-              className={`flex-1 bg-gradient-to-r from-indigo-600 to-purple-600 text-white py-2 sm:py-3 px-4 sm:px-6 rounded-lg hover:from-indigo-700 hover:to-purple-700 transition-all shadow-md hover:shadow-lg ${
-                (loading || formData.tags.length === 0) ? 'opacity-50 cursor-not-allowed' : ''
-              }`}
-            >
-              {loading ? (
-                <span className="flex items-center justify-center">
-                  <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                  </svg>
-                  {isEditing ? 'Updating...' : 'Creating...'}
-                </span>
-              ) : isEditing ? 'Update Project' : 'Create Project'}
-            </button>
-
-            {isEditing && (
-              <button
-                type="button"
-                onClick={() => navigate(`/projects/${id}`)}
-                className="px-4 sm:px-6 py-2 sm:py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
-              >
-                Cancel
-              </button>
+            <label className="label">Tags * (up to 10)</label>
+            <div style={{ display: 'flex', gap: 8 }}>
+              <input className="input" value={tagInput} onChange={e => setTagInput(e.target.value)} onKeyDown={e => { if (e.key === 'Enter') addTag(e); }} placeholder="Add tag and press Enter" />
+              <button type="button" className="btn btn-outline" onClick={addTag} style={{ flexShrink: 0 }}>Add</button>
+            </div>
+            {formData.tags.length > 0 && (
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 10 }}>
+                {formData.tags.map(tag => (
+                  <span key={tag} style={{ display: 'inline-flex', alignItems: 'center', gap: 4, padding: '4px 10px', background: 'var(--brand-light)', color: 'var(--brand)', borderRadius: 99, fontSize: '0.8rem', fontWeight: 600 }}>
+                    #{tag}
+                    <button type="button" onClick={() => removeTag(tag)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--brand)', lineHeight: 1, padding: 0, marginLeft: 2 }}>×</button>
+                  </span>
+                ))}
+              </div>
             )}
+          </div>
+
+          <div>
+            <label className="label">GitHub URL (optional)</label>
+            <input className="input" value={formData.githubUrl} onChange={e => setFormData(p => ({ ...p, githubUrl: e.target.value }))} placeholder="https://github.com/…" type="url" />
+          </div>
+
+          <div>
+            <label className="label">Documentation URL (optional)</label>
+            <input className="input" value={formData.documentationUrl} onChange={e => setFormData(p => ({ ...p, documentationUrl: e.target.value }))} placeholder="https://docs.example.com" type="url" />
+          </div>
+
+          <div style={{ display: 'flex', gap: 12, marginTop: 8 }}>
+            <button type="submit" className="btn btn-primary" disabled={loading} style={{ flex: 1, justifyContent: 'center' }}>
+              {loading ? <><span className="spinner" style={{ width: 16, height: 16 }} /> Saving…</> : (isEditing ? 'Update project' : 'Submit project')}
+            </button>
+            <button type="button" className="btn btn-ghost" onClick={() => window.history.back()}>Cancel</button>
           </div>
         </form>
       </div>
     </div>
   );
 }
-
-

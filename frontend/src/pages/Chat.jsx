@@ -1,1468 +1,187 @@
-
-
-
-
-
-// import { useState, useEffect, useRef } from 'react';
-// import { useParams } from 'react-router-dom';
-// import { useAuth } from '../context/AuthContext';
-// import { useSocket } from '../context/SocketContext';
-// import axios from '../api/axios';
-// import { FiSend } from 'react-icons/fi';
-
-// function isValidObjectId(id) {
-//   return /^[a-fA-F0-9]{24}$/.test(id);
-// }
-
-// export default function Chat() {
-//   const { projectId, userId } = useParams();
-//   const cleanProjectId = projectId.trim();
-//   const cleanUserId = userId.trim();
-
-//   const { user } = useAuth();
-//   const socket = useSocket();
-//   const [messages, setMessages] = useState([]);
-//   const [newMessage, setNewMessage] = useState('');
-//   const [recipient, setRecipient] = useState(null);
-//   const [loading, setLoading] = useState(true);
-//   const [error, setError] = useState('');
-//   const messagesEndRef = useRef(null);
-
-//   useEffect(() => {
-//     const fetchChatData = async () => {
-//       if (!isValidObjectId(cleanProjectId)) {
-//         setError('Invalid project ID');
-//         return;
-//       }
-
-//       try {
-//         setLoading(true);
-
-//         // Fetch project to get owner info
-//         const { data: projectResponse } = await axios.get(`/api/v1/projects/${cleanProjectId}`, {
-//           headers: {
-//             Authorization: `Bearer ${localStorage.getItem('token')}`
-//           }
-           
-//         });
-        
-//   console.log("➡️ Chat route projectId:", cleanProjectId, "userId:", cleanUserId);
-
-//         setRecipient(projectResponse.data.createdBy);
-        
-
-//         // Fetch chat history
-//         const { data: chatHistory } = await axios.get(`/api/v1/chat/${cleanProjectId}/${cleanUserId}/messages`, {
-//           headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
-//         });
-
-//         if (!chatHistory.data || chatHistory.data.length === 0) {
-//           console.log("📭 No chat messages yet");
-//           setMessages([]);
-//         } else {
-//           setMessages(chatHistory.data);
-//         }
-         
-//         setLoading(false);
-//       } catch (err) {
-        
-//         console.error('Failed to fetch chat data:', err);
-//         setError('❌ Failed to load chat. Project might not be accessible.');
-//         setLoading(false);
-//       }
-//     };
-
-//     fetchChatData();
-//   }, [cleanProjectId, cleanUserId]);
-
-//    useEffect(() => {
-//   if (!socket || !projectId) return;
-
-//   socket.emit('joinProject', projectId);
-
-//   socket.on('newMessage', (message) => {
-//     // Only add if not already present (prevent duplicates)
-//     setMessages((prev) => {
-//       const exists = prev.some(m => m._id === message._id);
-//       return exists ? prev : [...prev, message];
-//     });
-//   });
-
-//   return () => {
-//     socket.off('newMessage');
-//   };
-// }, [socket, projectId]);
-
-//  // ✅ cleaned dependency
-
-//   useEffect(() => {
-//     scrollToBottom();
-//   }, [messages]);
-
-//   const scrollToBottom = () => {
-//     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-//   };
-
-//   const handleSendMessage = () => {
-//     if (!newMessage.trim() || !socket || !recipient) return;
-
-//     const messageData = {
-//       recipientId: recipient._id,
-//       projectId: cleanProjectId,
-//       content: newMessage
-//     };
-
-//     socket.emit('sendMessage', messageData);
-//     setNewMessage('');
-//   };
-
-//   return (
-//     <div className="flex flex-col h-screen bg-gray-100">
-//       <div className="bg-blue-600 p-4 shadow-md">
-//         <h2 className="text-xl font-semibold text-white">
-//           Chat with {recipient?.name || 'User'}
-//         </h2>
-//       </div>
-
-//       <div className="flex-1 overflow-y-auto p-4 space-y-4">
-//         {loading ? (
-//           <p className="text-gray-500 text-center">Loading chat...</p>
-//         ) : error ? (
-//           <p className="text-red-500 text-center">{error}</p>
-//         ) : messages.length === 0 ? (
-//           <p className="text-gray-500 text-sm text-center">📭 No messages yet. Start the conversation!</p>
-//         ) : (
-//           messages.map((message) => (
-//             <div
-//               key={message._id}
-//               className={`flex ${message.sender === user.id ? 'justify-end' : 'justify-start'}`}
-//             >
-//               <div
-//                 className={`max-w-xs md:max-w-md rounded-lg p-3 ${
-//                   message.sender === user.id
-//                     ? 'bg-primary text-white'
-//                     : 'bg-white border border-gray-200'
-//                 }`}
-//               >
-//                 <p>{message.content}</p>
-//                 <p className="text-xs mt-1 opacity-70">
-//                   {new Date(message.createdAt).toLocaleTimeString()}
-//                 </p>
-//               </div>
-//             </div>
-//           ))
-//         )}
-//         <div ref={messagesEndRef} />
-//       </div>
-
-//       <div className="bg-white p-4 border-t border-gray-200">
-//         <div className="flex space-x-2">
-//           <input
-//             type="text"
-//             value={newMessage}
-//             onChange={(e) => setNewMessage(e.target.value)}
-//             onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
-//             placeholder="Type your message..."
-//             className="flex-1 border border-gray-300 rounded-md px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
-//           />
-//           <button
-//             onClick={handleSendMessage}
-//             className="bg-primary text-blue-600 rounded-md px-4 py-2 hover:bg-primary-dark flex items-center"
-//           >
-//             <FiSend className="mr-2" />
-//             Send
-//           </button>
-//         </div>
-//       </div>
-//     </div>
-//   );
-// }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-//all good 
-
-
-// import { useState, useEffect, useRef } from 'react';
-// import { useParams } from 'react-router-dom';
-// import { useAuth } from '../context/AuthContext';
-// import { useSocket } from '../context/SocketContext';
-// import axios from '../api/axios';
-// import { FiSend } from 'react-icons/fi';
-
-// function isValidObjectId(id) {
-//   return /^[a-fA-F0-9]{24}$/.test(id);
-// }
-
-// export default function Chat() {
-//   const { projectId, userId } = useParams();
-//   const cleanProjectId = projectId?.trim();
-//   const cleanUserId = userId?.trim();
-
-//   const { user } = useAuth();
-//   const socket = useSocket();
-//   const [messages, setMessages] = useState([]);
-//   const [newMessage, setNewMessage] = useState('');
-//   const [projectOwner, setProjectOwner] = useState(null);
-//   const messagesEndRef = useRef(null);
-
-//   // Fetch owner + history
-//   useEffect(() => {
-//     const fetchChatData = async () => {
-//       if (!isValidObjectId(cleanProjectId) || !isValidObjectId(cleanUserId)) return;
-
-//       try {
-//         // ✅ 1. Fetch project to get owner
-//         const { data: projectRes } = await axios.get(`/api/v1/projects/${cleanProjectId}`, {
-//           headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
-//         });
-
-//         const owner = projectRes.data.createdBy;
-//         setProjectOwner(owner);
-
-//         // ✅ 2. Fetch full chat history between owner and selected user
-//         const { data: chatRes } = await axios.get(
-//           `/api/v1/chat/${cleanProjectId}/${cleanUserId}/messages`,
-//           {
-//             headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
-//           }
-//         );
-
-//         const history = chatRes.data?.data || [];
-//         setMessages(history);
-
-//         // ✅ 3. Mark unread messages as read
-//         await axios.put(`/api/v1/chat/${cleanProjectId}/${cleanUserId}/read`, {}, {
-//           headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
-//         });
-
-//         setMessages(prevMessages =>
-//           prevMessages.map((msg) =>
-//             msg.recipient._id === user._id ? { ...msg, read: true } : msg
-//           )
-//         );
-//       } catch (err) {
-//         console.error("❌ Failed to fetch chat:", err);
-//       }
-//     };
-
-//     fetchChatData();
-//   }, [cleanProjectId, cleanUserId, user._id]);
-
-//   // Socket: messagesRead event
-//   useEffect(() => {
-//     if (!socket || !cleanProjectId) return;
-
-//     const handleMessagesRead = ({ readerId, projectId: pId, fromUserId }) => {
-//       setMessages((prevMessages) =>
-//         prevMessages.map((msg) =>
-//           msg.sender._id === user._id && msg.recipient._id === readerId
-//             ? { ...msg, read: true }
-//             : msg
-//         )
-//       );
-//     };
-
-//     socket.on('messagesRead', handleMessagesRead);
-//     return () => socket.off('messagesRead', handleMessagesRead);
-//   }, [socket, cleanProjectId, user._id]);
-
-//   // Socket: receive new message
-//   useEffect(() => {
-//     if (!socket || !cleanProjectId || !user) return;
-
-//     socket.emit('joinProject', cleanProjectId);
-//     socket.emit('joinUserRoom', user._id); // optional for read receipts
-
-//     const handleNewMessage = async (message) => {
-//       setMessages(prev => {
-//         if (prev.some(m => m._id === message._id)) return prev;
-//         return [...prev, message];
-//       });
-
-//       if (message.recipient._id === user._id) {
-//         await axios.put(`/api/v1/chat/${cleanProjectId}/${cleanUserId}/read`, {}, {
-//           headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
-//         });
-
-//         setMessages(prev =>
-//           prev.map(msg =>
-//             msg._id === message._id ? { ...msg, read: true } : msg
-//           )
-//         );
-//       }
-//     };
-
-//     socket.on('newMessage', handleNewMessage);
-//     return () => socket.off('newMessage', handleNewMessage);
-//   }, [socket, cleanProjectId, cleanUserId, user]);
-
-//   // Scroll to bottom
-//   useEffect(() => {
-//     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-//   }, [messages]);
-
-//   const handleSendMessage = () => {
-//     if (!newMessage.trim() || !socket || !projectOwner) return;
-
-//     const messageData = {
-//       recipientId: cleanUserId, // ⚠️ if owner is chatting with user
-//       projectId: cleanProjectId,
-//       content: newMessage
-//     };
-
-//     socket.emit('sendMessage', messageData);
-//     setNewMessage('');
-//   };
-
-//   const isOwner = user._id === projectOwner?._id;
-
-//   return (
-//     <div className="flex flex-col h-screen bg-gray-100">
-//       <div className="bg-blue-600 p-4 shadow-md">
-//         <h2 className="text-xl font-semibold text-white">
-//           Chat with {projectOwner?.name || 'Loading...'}
-//         </h2>
-//       </div>
-
-//       <div className="flex-1 overflow-y-auto p-4 space-y-4">
-//         {messages.length === 0 && (
-//           <p className="text-gray-500 text-center text-sm">
-//             📭 No messages yet.
-//           </p>
-//         )}
-
-//         {messages.map((message) => {
-//           const isMsgFromOwner = message.sender._id === isOwner?._id;
-//           const alignRight = isMsgFromOwner;
-
-//           return (
-//             <div
-//               key={message._id}
-//               className={`flex ${alignRight ? 'justify-end' : 'justify-start'}`}
-//             >
-//               <div className="flex flex-col max-w-xs md:max-w-md">
-//                 <span className="text-xs text-gray-500 mb-1 ml-1">
-//                   {message.sender.name}
-//                 </span>
-//                 <div
-//                   className={`rounded-lg p-3 ${
-//                     alignRight ? 'bg-blue-600 text-white' : 'bg-white border border-gray-300'
-//                   }`}
-//                 >
-//                   <p>{message.content}</p>
-//                   <div className="flex justify-between text-xs mt-1 opacity-70">
-//                     <span>{new Date(message.createdAt).toLocaleTimeString()}</span>
-//                     {alignRight && message.sender._id === user._id && (
-//                       <span>{message.read ? '✓✓' : '✓'}</span>
-//                     )}
-//                   </div>
-//                 </div>
-//               </div>
-//             </div>
-//           );
-//         })}
-
-//         <div ref={messagesEndRef} />
-//       </div>
-
-//       <div className="bg-white p-4 border-t border-gray-200">
-//         <div className="flex space-x-2">
-//           <input
-//             type="text"
-//             value={newMessage}
-//             onChange={(e) => setNewMessage(e.target.value)}
-//             onKeyDown={(e) => e.key === 'Enter' && handleSendMessage()}
-//             placeholder="Type your message..."
-//             className="flex-1 border border-gray-300 rounded-md px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-//           />
-//           <button
-//             onClick={handleSendMessage}
-//             className="bg-blue-600 text-white rounded-md px-4 py-2 hover:bg-blue-700 flex items-center"
-//           >
-//             <FiSend className="mr-1" />
-//             Send
-//           </button>
-//         </div>
-//       </div>
-//     </div>
-//   );
-// }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-//good code for chat component
-
-
-
-// import { useState, useEffect, useRef } from 'react';
-// import { useParams } from 'react-router-dom';
-// import { useAuth } from '../context/AuthContext';
-// import { useSocket } from '../context/SocketContext';
-// import axios from '../api/axios';
-// import { FiSend } from 'react-icons/fi';
-
-// function isValidObjectId(id) {
-//   return /^[a-fA-F0-9]{24}$/.test(id);
-// }
-
-// export default function Chat() {
-//   const { projectId, userId } = useParams();
-//   const cleanProjectId = projectId?.trim();
-//   const cleanUserId = userId?.trim();
-
-//   const { user } = useAuth();
-//   const socket = useSocket();
-//   const [messages, setMessages] = useState([]);
-//   const [newMessage, setNewMessage] = useState('');
-//   const [projectOwner, setProjectOwner] = useState(null);
-//   const messagesEndRef = useRef(null);
-
-//   // 📩 Fetch chat history + mark as read
-//   useEffect(() => {
-//     const fetchChatData = async () => {
-//       if (!isValidObjectId(cleanProjectId) || !isValidObjectId(cleanUserId)) return;
-
-//       try {
-//         const { data: projectRes } = await axios.get(`/api/v1/projects/${cleanProjectId}`, {
-//           headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
-//         });
-
-//         setProjectOwner(projectRes.data.createdBy);
-
-//         const { data: chatRes } = await axios.get(
-//           `/api/v1/chat/${cleanProjectId}/${cleanUserId}/messages`,
-//           { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }
-//         );
-
-//         const history = chatRes.data?.data || [];
-
-//         await axios.put(`/api/v1/chat/${cleanProjectId}/${cleanUserId}/read`, {}, {
-//           headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
-//         });
-
-//         const updated = history.map((msg) =>
-//           msg.recipient._id === user._id ? { ...msg, read: true } : msg
-//         );
-//         setMessages(updated);
-//       } catch (err) {
-//         console.error("❌ Failed to fetch chat data:", err);
-//       }
-//     };
-
-//     fetchChatData();
-//   }, [cleanProjectId, cleanUserId, user._id]);
-
-//   // ✅ Listen for read receipts
-//   useEffect(() => {
-//     if (!socket || !cleanProjectId) return;
-
-//     const handleMessagesRead = ({ readerId, projectId: pId, fromUserId }) => {
-//       setMessages((prevMessages) =>
-//         prevMessages.map((msg) =>
-//           msg.sender._id === user._id && msg.recipient._id === readerId
-//             ? { ...msg, read: true }
-//             : msg
-//         )
-//       );
-//     };
-
-//     socket.on('messagesRead', handleMessagesRead);
-//     return () => socket.off('messagesRead', handleMessagesRead);
-//   }, [socket, cleanProjectId, user._id]);
-
-//   // ✅ Real-time message handler
-//   useEffect(() => {
-//     if (!socket || !cleanProjectId || !user) return;
-
-//     socket.emit('joinProject', cleanProjectId);
-//     socket.emit('joinUserRoom', user._id);
-
-//     const handleNewMessage = async (message) => {
-//       setMessages(prev => {
-//         if (prev.some(m => m._id === message._id)) return prev;
-//         return [...prev, message];
-//       });
-
-//       if (message.recipient._id === user._id) {
-//         await axios.put(`/api/v1/chat/${cleanProjectId}/${cleanUserId}/read`, {}, {
-//           headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
-//         });
-
-//         setMessages(prev =>
-//           prev.map(msg =>
-//             msg._id === message._id ? { ...msg, read: true } : msg
-//           )
-//         );
-//       }
-//     };
-
-//     socket.on('newMessage', handleNewMessage);
-//     return () => socket.off('newMessage', handleNewMessage);
-//   }, [socket, cleanProjectId, cleanUserId, user]);
-
-//   // ⬇️ Auto-scroll to latest
-//   useEffect(() => {
-//     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-//   }, [messages]);
-
-//   const handleSendMessage = () => {
-//     if (!newMessage.trim() || !socket || !projectOwner) return;
-
-//     const messageData = {
-//       recipientId: projectOwner._id,
-//       projectId: cleanProjectId,
-//       content: newMessage
-//     };
-
-//     socket.emit('sendMessage', messageData);
-//     setNewMessage('');
-//   };
-
-//   return (
-//     <div className="flex flex-col h-screen bg-gray-100">
-//       <div className="bg-blue-600 p-4 shadow-md">
-//         <h2 className="text-xl font-semibold text-white">
-//           Chat for Project: {projectId}
-//         </h2>
-//       </div>
-
-//       <div className="flex-1 overflow-y-auto p-4 space-y-4">
-//         {messages.length === 0 && (
-//           <p className="text-gray-500 text-center text-sm">
-//             📭 No messages yet. Start the conversation!
-//           </p>
-//         )}
-
-//         {messages.map((message) => {
-//           const isOwner = message.sender._id === projectOwner?._id;
-
-//           return (
-//             <div key={message._id} className={`flex ${isOwner ? 'justify-end' : 'justify-start'}`}>
-//               <div className="flex flex-col max-w-xs md:max-w-md">
-//                 {/* Show sender name */}
-//                 <span className="text-xs text-gray-500 mb-1 ml-1">
-//                   {message.sender.name}
-//                 </span>
-
-//                 <div
-//                   className={`rounded-lg p-3 ${
-//                     isOwner ? 'bg-blue-600 text-white' : 'bg-white border border-gray-300'
-//                   }`}
-//                 >
-//                   <p>{message.content}</p>
-//                   <div className="flex justify-between text-xs mt-1 opacity-70">
-//                     <span>{new Date(message.createdAt).toLocaleTimeString()}</span>
-//                     {/* ✅ Only show read status for owner's own messages */}
-//                     {message.sender._id === user._id && isOwner && (
-//                       <span className="ml-2">
-//                         {message.read ? '✓✓' : '✓'}
-//                       </span>
-//                     )}
-//                   </div>
-//                 </div>
-//               </div>
-//             </div>
-//           );
-//         })}
-//         <div ref={messagesEndRef} />
-//       </div>
-
-//       <div className="bg-white p-4 border-t border-gray-200">
-//         <div className="flex space-x-2">
-//           <input
-//             type="text"
-//             value={newMessage}
-//             onChange={(e) => setNewMessage(e.target.value)}
-//             onKeyDown={(e) => e.key === 'Enter' && handleSendMessage()}
-//             placeholder="Type your message..."
-//             className="flex-1 border border-gray-300 rounded-md px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-//           />
-//           <button
-//             onClick={handleSendMessage}
-//             className="bg-blue-600 text-white rounded-md px-4 py-2 hover:bg-blue-700 flex items-center"
-//           >
-//             <FiSend className="mr-1" />
-//             Send
-//           </button>
-//         </div>
-//       </div>
-//     </div>
-//   );
-// }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
- // last corrected code:
-
-// import { useState, useEffect, useRef } from 'react';
-// import { useParams } from 'react-router-dom';
-// import { useAuth } from '../context/AuthContext';
-// import { useSocket } from '../context/SocketContext';
-// import axios from '../api/axios';
-// import { FiSend } from 'react-icons/fi';
-
-// function isValidObjectId(id) {
-//   return /^[a-fA-F0-9]{24}$/.test(id);
-// }
-
-// export default function Chat() {
-//   const { projectId, userId } = useParams();
-//   const cleanProjectId = projectId?.trim();
-//   const cleanUserId = userId?.trim();
-
-//   const { user } = useAuth();
-//   const socket = useSocket();
-//   const [messages, setMessages] = useState([]);
-//   const [newMessage, setNewMessage] = useState('');
-//   const [recipient, setRecipient] = useState(null);
-//   const messagesEndRef = useRef(null);
-
-//   // 📩 Fetch chat history + mark as read
-//   useEffect(() => {
-//     const fetchChatData = async () => {
-//       if (!isValidObjectId(cleanProjectId) || !isValidObjectId(cleanUserId)) return;
-
-//       try {
-//         // Get recipient
-//         const { data: projectRes } = await axios.get(`/api/v1/projects/${cleanProjectId}`, {
-//           headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
-//         });
-
-//         setRecipient(projectRes.data.createdBy);
-
-//         // Get chat history
-//         const { data: chatRes } = await axios.get(
-//           `/api/v1/chat/${cleanProjectId}/${cleanUserId}/messages`,
-//           { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }
-//         );
-
-//         const history = chatRes.data?.data || [];
-//         setMessages(history);
-
-//         // Mark unread as read
-//         await axios.put(`/api/v1/chat/${cleanProjectId}/${cleanUserId}/read`, {}, {
-//           headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
-//         });
-
-//         // Update local read status
-//         setMessages((prevMessages) =>
-//           prevMessages.map((msg) =>
-//             msg.recipient._id === user._id ? { ...msg, read: true } : msg
-//           )
-//         );
-//       } catch (err) {
-//         console.error("❌ Failed to fetch chat data:", err);
-//       }
-//     };
-   
-//     fetchChatData();
-//   }, [cleanProjectId, cleanUserId, user._id]);
-
-//  useEffect(() => {
-//   if (!socket || !cleanProjectId) return;
-
-//   const handleMessagesRead = ({ readerId, projectId: pId, fromUserId }) => {
-//     console.log("📬 messagesRead event received:", { readerId, pId, fromUserId });
-
-  
-
-//     // ✅ Mark my sent messages to this recipient as read
-//     setMessages((prevMessages) =>
-//       prevMessages.map((msg) =>
-//         msg.sender._id === user._id && msg.recipient._id === readerId
-//           ? { ...msg, read: true }
-//           : msg
-//       )
-//     );
-//   };
-
-//   socket.on('messagesRead', handleMessagesRead);
-
-//   return () => socket.off('messagesRead', handleMessagesRead);
-// }, [socket, cleanProjectId, user._id]);
-
-//  // 🔌 Listen for real-time messages
-//   useEffect(() => {
-//     if (!socket || !cleanProjectId) return;
-
-//     socket.emit('joinProject', cleanProjectId);
-
-//     const handleNewMessage = async (message) => {
-//       setMessages(prev => {
-//         if (prev.some(m => m._id === message._id)) return prev;
-//         return [...prev, message];
-//       });
-
-//       // Mark received messages as read if for current user
-//       if (message.recipient._id === user._id) {
-//         await axios.put(`/api/v1/chat/${cleanProjectId}/${cleanUserId}/read`, {}, {
-//           headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
-//         });
-
-//         setMessages(prevMessages =>
-//           prevMessages.map((msg) =>
-//             msg._id === message._id ? { ...msg, read: true } : msg
-//           )
-//         );
-//       }
-//     };
-
-//     socket.on('newMessage', handleNewMessage);
-//     return () => socket.off('newMessage', handleNewMessage);
-//   }, [socket, cleanProjectId, cleanUserId, user._id]);
-
-//   // ⬇️ Auto-scroll
-//   useEffect(() => {
-//     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-//      console.log("🔍 Messages updated:", messages);
-//   }, [messages]);
-
-//   const handleSendMessage = () => {
-//     if (!newMessage.trim() || !socket || !recipient) return;
-
-//     const messageData = {
-//       recipientId: recipient._id,
-//       projectId: cleanProjectId,
-//       content: newMessage
-//     };
-
-//     socket.emit('sendMessage', messageData);
-//     setNewMessage('');
-//   };
-
-//   return (
-//     <div className="flex flex-col h-screen bg-gray-100">
-//       <div className="bg-blue-600 p-4 shadow-md">
-//         <h2 className="text-xl font-semibold text-white">
-//           Chat with {recipient?.name || 'User'}
-//         </h2>
-//       </div>
-
-//       <div className="flex-1 overflow-y-auto p-4 space-y-4">
-//         {messages.length === 0 && (
-//           <p className="text-gray-500 text-center text-sm">
-//             📭 No messages yet. Start the conversation!
-//           </p>
-//         )}
-
-//         {messages.map((message) => (
-//           <div
-//             key={message._id}
-//             className={`flex ${message.sender._id === user.id ? 'justify-end' : 'justify-start'}`}
-//           >
-//             <div
-//               className={`max-w-xs md:max-w-md rounded-lg p-3 ${
-//                 message.sender._id === user.id
-//                   ? 'bg-blue-600 text-white'
-//                   : 'bg-white border border-gray-200'
-//               }`}
-//             >
-//               <p>{message.content}</p>
-//               <div className="flex justify-between text-xs mt-1 opacity-70">
-//                 <span>{new Date(message.createdAt).toLocaleTimeString()}</span>
-//                 {message.sender._id === user.id && (
-//                   <span className="ml-2">
-//                     {message.read ? '✓✓' : '✓'}
-//                   </span>
-//                 )}
-//               </div>
-//             </div>
-//           </div>
-//         ))}
-
-//         <div ref={messagesEndRef} />
-//       </div>
-
-//       <div className="bg-white p-4 border-t border-gray-200">
-//         <div className="flex space-x-2">
-//           <input
-//             type="text"
-//             value={newMessage}
-//             onChange={(e) => setNewMessage(e.target.value)}
-//             onKeyDown={(e) => e.key === 'Enter' && handleSendMessage()}
-//             placeholder="Type your message..."
-//             className="flex-1 border border-gray-300 rounded-md px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-//           />
-//           <button
-//             onClick={handleSendMessage}
-//             className="bg-blue-600 text-white rounded-md px-4 py-2 hover:bg-blue-700 flex items-center"
-//           >
-//             <FiSend className="mr-1" />
-//             Send
-//           </button>
-//         </div>
-//       </div>
-//     </div>
-//   );
-// }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// corrected 
-
-
-// import { useState, useEffect, useRef } from 'react';
-// import { useParams } from 'react-router-dom';
-// import { useAuth } from '../context/AuthContext';
-// import { useSocket } from '../context/SocketContext';
-// import axios from '../api/axios';
-// import { FiSend } from 'react-icons/fi';
-
-// function isValidObjectId(id) {
-//   return /^[a-fA-F0-9]{24}$/.test(id);
-// }
-
-// export default function Chat() {
-//   const { projectId, userId } = useParams();
-//   const cleanProjectId = projectId.trim();
-//   const cleanUserId = userId.trim();
-
-//   const { user } = useAuth();
-//   const socket = useSocket();
-//   const [messages, setMessages] = useState([]);
-//   const [newMessage, setNewMessage] = useState('');
-//   const [recipient, setRecipient] = useState(null);
-//   const [loading, setLoading] = useState(true);
-//   const [error, setError] = useState('');
-//   const messagesEndRef = useRef(null);
-
-//   useEffect(() => {
-//     const fetchChatData = async () => {
-//       if (!isValidObjectId(cleanProjectId)) {
-//         setError('Invalid project ID');
-//         return;
-//       }
-
-//       try {
-//         setLoading(true);
-
-//         // Fetch project to get owner info
-//         const { data: projectResponse } = await axios.get(`/api/v1/projects/${cleanProjectId}`, {
-//           headers: {
-//             Authorization: `Bearer ${localStorage.getItem('token')}`
-//           }
-           
-//         });
-        
-//   console.log("➡️ Chat route projectId:", cleanProjectId, "userId:", cleanUserId);
-
-//         setRecipient(projectResponse.data.createdBy);
-        
-
-//         // Fetch chat history
-//         const { data: chatHistory } = await axios.get(`/api/v1/chat/${cleanProjectId}/${cleanUserId}/messages`, {
-//           headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
-//         });
-
-//         if (!chatHistory.data || chatHistory.data.length === 0) {
-//           console.log("📭 No chat messages yet");
-//           setMessages([]);
-//         } else {
-//           setMessages(chatHistory.data);
-//         }
-         
-//         setLoading(false);
-//       } catch (err) {
-        
-//         console.error('Failed to fetch chat data:', err);
-//         setError('❌ Failed to load chat. Project might not be accessible.');
-//         setLoading(false);
-//       }
-//     };
-
-//     fetchChatData();
-//   }, [cleanProjectId, cleanUserId]);
-
-//    useEffect(() => {
-//   if (!socket || !projectId) return;
-
-//   socket.emit('joinProject', projectId);
-
-//   socket.on('newMessage', (message) => {
-//     // Only add if not already present (prevent duplicates)
-//     setMessages((prev) => {
-//       const exists = prev.some(m => m._id === message._id);
-//       return exists ? prev : [...prev, message];
-//     });
-//   });
-
-//   return () => {
-//     socket.off('newMessage');
-//   };
-// }, [socket, projectId]);
-
-//  // ✅ cleaned dependency
-
-//   useEffect(() => {
-//     scrollToBottom();
-//   }, [messages]);
-
-//   const scrollToBottom = () => {
-//     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-//   };
-
-//   const handleSendMessage = () => {
-//     if (!newMessage.trim() || !socket || !recipient) return;
-
-//     const messageData = {
-//       recipientId: recipient._id,
-//       projectId: cleanProjectId,
-//       content: newMessage
-//     };
-
-//     socket.emit('sendMessage', messageData);
-//     setNewMessage('');
-//   };
-
-//   return (
-//     <div className="flex flex-col h-screen bg-gray-100">
-//       <div className="bg-blue-600 p-4 shadow-md">
-//         <h2 className="text-xl font-semibold text-white">
-//           Chat with {recipient?.name || 'User'}
-//         </h2>
-//       </div>
-
-//       <div className="flex-1 overflow-y-auto p-4 space-y-4">
-//         {loading ? (
-//           <p className="text-gray-500 text-center">Loading chat...</p>
-//         ) : error ? (
-//           <p className="text-red-500 text-center">{error}</p>
-//         ) : messages.length === 0 ? (
-//           <p className="text-gray-500 text-sm text-center">📭 No messages yet. Start the conversation!</p>
-//         ) : (
-//           messages.map((message) => (
-//             <div
-//               key={message._id}
-//               className={`flex ${message.sender === user.id ? 'justify-end' : 'justify-start'}`}
-//             >
-//               <div
-//                 className={`max-w-xs md:max-w-md rounded-lg p-3 ${
-//                   message.sender === user.id
-//                     ? 'bg-primary text-white'
-//                     : 'bg-white border border-gray-200'
-//                 }`}
-//               >
-//                 <p>{message.content}</p>
-//                 <p className="text-xs mt-1 opacity-70">
-//                   {new Date(message.createdAt).toLocaleTimeString()}
-//                 </p>
-//               </div>
-//             </div>
-//           ))
-//         )}
-//         <div ref={messagesEndRef} />
-//       </div>
-
-//       <div className="bg-white p-4 border-t border-gray-200">
-//         <div className="flex space-x-2">
-//           <input
-//             type="text"
-//             value={newMessage}
-//             onChange={(e) => setNewMessage(e.target.value)}
-//             onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
-//             placeholder="Type your message..."
-//             className="flex-1 border border-gray-300 rounded-md px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
-//           />
-//           <button
-//             onClick={handleSendMessage}
-//             className="bg-primary text-blue-600 rounded-md px-4 py-2 hover:bg-primary-dark flex items-center"
-//           >
-//             <FiSend className="mr-2" />
-//             Send
-//           </button>
-//         </div>
-//       </div>
-//     </div>
-//   );
-// }
-
-
-
-
-
-
-
-
-
-//corrected code:
-
-
-// import { useEffect, useRef, useState } from 'react';
-// import { useParams } from 'react-router-dom';
-// import { useAuth } from '../context/AuthContext';
-// import { useSocket } from '../context/SocketContext';
-// import axios from '../api/axios';
-// import { FiSend } from 'react-icons/fi';
-
-
-// export default function Chat() {
-//   const { projectId } = useParams();
-//   const { user } = useAuth();
-//   const socket = useSocket();
-
-//   const [messages, setMessages] = useState([]);
-//   const [newMessage, setNewMessage] = useState('');
-//   const messagesEndRef = useRef(null);
-//   const [projectOwner,setProjectOwner]=useState(null);
-
-//   useEffect(() => {
-//     const fetchMessages = async () => {
-//       try {
-//         // const res = await axios.get(`/api/v1/chat/${projectId}/messages`);
-//         // setMessages(res.data.data);
-//         // Get messages
-// const res = await axios.get(`/api/v1/chat/${projectId}/messages`);
-// setMessages(res.data.data);
-
-// // Get project details to find the owner
-// const projectRes = await axios.get(`/api/v1/projects/${projectId}`);
-// setProjectOwner(projectRes.data.data.createdBy);
-
-//       } catch (err) {
-//         console.error('Failed to fetch messages:', err);
-//       }
-//     };
-//     fetchMessages();
-//   }, [projectId]);
-
-//   useEffect(() => {
-//     if (!socket) return;
-
-//     socket.emit('joinProject', projectId);
-
-//     const handleNewMessage = (msg) => {
-//       setMessages((prev) => [...prev, msg]);
-//     };
-
-//     socket.on('newProjectMessage', handleNewMessage);
-//     return () => socket.off('newProjectMessage', handleNewMessage);
-//   }, [socket, projectId]);
-
-//   useEffect(() => {
-//     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-//   }, [messages]);
-
-//   const sendMessage = () => {
-//     if (!newMessage.trim()) return;
-
-//     socket.emit('sendProjectMessage', {
-//       projectId,
-//       content: newMessage
-//     });
-
-//     setNewMessage('');
-//   };
-
-  
-//  return (
-//     <div className="flex flex-col h-screen bg-gray-50">
-//       <div className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white p-4 text-lg font-semibold flex items-center">
-//         <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-//           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-//         </svg>
-//         Project Chat
-//       </div>
-
-//       <div className="flex-1 overflow-y-auto p-4 space-y-4">
-//         {messages.map((msg) => (
-//           <div key={msg._id} className={`flex ${msg.sender._id === user._id ? 'justify-end' : 'justify-start'}`}>
-//             <div className={`p-4 rounded-2xl max-w-xs md:max-w-md ${msg.sender._id === user._id 
-//               ? 'bg-indigo-600 text-white rounded-br-none' 
-//               : 'bg-white border border-gray-200 rounded-bl-none shadow-sm'}`}
-//             >
-//               <p className="text-sm font-medium mb-1">
-//                 {projectOwner && msg.sender._id === projectOwner._id ? (
-//                   <span className="text-yellow-300">👑 Owner</span>
-//                 ) : (
-//                   msg.sender.name
-//                 )}
-//               </p>
-//               <p className="text-sm">{msg.content}</p>
-//               <p className="text-xs opacity-70 mt-2 text-right">
-//                 {new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-//               </p>
-//             </div>
-//           </div>
-//         ))}
-//         <div ref={messagesEndRef} />
-//       </div>
-
-//       <div className="p-4 bg-white border-t border-gray-200">
-//         <div className="flex space-x-2">
-//           <input
-//             className="flex-1 border border-gray-300 px-4 py-3 rounded-full focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition"
-//             value={newMessage}
-//             onChange={(e) => setNewMessage(e.target.value)}
-//             onKeyDown={(e) => e.key === 'Enter' && sendMessage()}
-//             placeholder="Type your message..."
-//           />
-//           <button 
-//             onClick={sendMessage}
-//             className="bg-indigo-600 text-white p-3 rounded-full hover:bg-indigo-700 transition-colors shadow-md"
-//           >
-//             <FiSend className="w-5 h-5" />
-//           </button>
-//         </div>
-//       </div>
-//     </div>
-//   )
-// }
-
-
-
-
-
-
-
-
-
-
-
-//   return (
-//     <div className="flex flex-col h-screen">
-//       <div className="bg-blue-600 text-white p-4 text-lg font-semibold">Project Chat</div>
-
-//       <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-gray-100">
-//         {messages.map((msg) => (
-//           <div key={msg._id} className={`flex ${msg.sender._id === user._id ? 'justify-end' : 'justify-start'}`}>
-//             <div className={`p-3 rounded-lg max-w-md ${msg.sender._id === user._id ? 'bg-blue-600 text-white' : 'bg-white border'}`}>
-//               {/* <p className="text-sm font-medium">{msg.sender.name}</p> */}
-//               <p className="text-sm font-medium">
-//   {projectOwner && msg.sender._id === projectOwner._id
-//     ? 'Owner'
-//     : msg.sender.name}
-// </p>
-
-//               <p>{msg.content}</p>
-//               <p className="text-xs text-gray-500 mt-1">{new Date(msg.createdAt).toLocaleTimeString()}</p>
-//             </div>
-//           </div>
-//         ))}
-//         <div ref={messagesEndRef} />
-//       </div>
-
-//       <div className="p-4 bg-white border-t flex space-x-2">
-//         <input
-//           className="flex-1 border px-4 py-2 rounded-md"
-//           value={newMessage}
-//           onChange={(e) => setNewMessage(e.target.value)}
-//           onKeyDown={(e) => e.key === 'Enter' && sendMessage()}
-//           placeholder="Type message..."
-//         />
-//         <button onClick={sendMessage} className="bg-blue-600 text-white px-4 py-2 rounded-md flex items-center">
-//           <FiSend className="mr-1" /> Send
-//         </button>
-//       </div>
-//     </div>
-//   );
-// }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 import { useEffect, useRef, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useSocket } from '../context/SocketContext';
 import axios from '../api/axios';
-import { FiSend } from 'react-icons/fi';
-import { useLoading } from '../context/LoadingContext';
-//import LoadingSpinner from '../components/LoadingSpinner';
+
+function isValidId(id) { return /^[a-fA-F0-9]{24}$/.test(id); }
+
 export default function Chat() {
   const { projectId } = useParams();
   const { user } = useAuth();
   const socket = useSocket();
+  const navigate = useNavigate();
 
   const [messages, setMessages] = useState([]);
-  const [newMessage, setNewMessage] = useState('');
-  const [projectOwner, setProjectOwner] = useState(null);
-  const messagesEndRef = useRef(null);
- const { setLoading } = useLoading();
-  // Fetch messages and project owner
+  const [input, setInput] = useState('');
+  const [project, setProject] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [typing, setTyping] = useState(false);
+  const bottomRef = useRef(null);
+  const typingTimer = useRef(null);
+
   useEffect(() => {
-    const fetchMessages = async () => {
+    if (!isValidId(projectId)) return navigate('/projects');
+    const load = async () => {
       try {
-        setLoading(true);
-       // LoadingSpinner(true); // Add this
-        const res = await axios.get(`/api/v1/chat/${projectId}/messages`);
-        setMessages(res.data.data);
-
-        const projectRes = await axios.get(`/api/v1/projects/${projectId}`);
-        setProjectOwner(projectRes.data.data.createdBy);
+        const [msgRes, projRes] = await Promise.all([
+          axios.get(`/api/v1/chat/${projectId}/messages`),
+          axios.get(`/api/v1/projects/${projectId}`),
+        ]);
+        setMessages(msgRes.data.data || []);
+        setProject(projRes.data.data);
+        // Mark as read
+        axios.put(`/api/v1/chat/${projectId}/messages/read`).catch(() => {});
       } catch (err) {
-        console.error('Failed to fetch messages:', err);
-      }finally {
-    setLoading(false); // Add this
-  }
-
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
     };
+    load();
+  }, [projectId, navigate]);
 
-    fetchMessages();
-  }, [projectId]);
-
-  // Handle socket join and new messages
   useEffect(() => {
-    if (!socket) return;
-
+    if (!socket || !projectId) return;
     socket.emit('joinProject', projectId);
 
-    const handleNewMessage = (msg) => {
-      setMessages((prev) => [...prev, msg]);
+    const handleMsg = (msg) => {
+      setMessages(prev => prev.some(m => m._id === msg._id) ? prev : [...prev, msg]);
+      setTyping(false);
     };
+    const handleTyping = ({ userId }) => {
+      if (userId !== user?._id) setTyping(true);
+    };
+    const handleStopTyping = () => setTyping(false);
 
-    socket.on('newProjectMessage', handleNewMessage);
-    return () => socket.off('newProjectMessage', handleNewMessage);
-  }, [socket, projectId]);
+    socket.on('newProjectMessage', handleMsg);
+    socket.on('userTyping', handleTyping);
+    socket.on('userStoppedTyping', handleStopTyping);
+    return () => {
+      socket.off('newProjectMessage', handleMsg);
+      socket.off('userTyping', handleTyping);
+      socket.off('userStoppedTyping', handleStopTyping);
+      socket.emit('leaveProject', projectId);
+    };
+  }, [socket, projectId, user]);
 
-  // Auto scroll
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
+  useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [messages, typing]);
 
-  const sendMessage = () => {
-    if (!newMessage.trim() || !socket) return;
-
-    socket.emit('sendProjectMessage', {
-      projectId,
-      content: newMessage,
-    });
-
-    setNewMessage('');
+  const handleInput = (val) => {
+    setInput(val);
+    if (!socket) return;
+    socket.emit('typing', { projectId });
+    clearTimeout(typingTimer.current);
+    typingTimer.current = setTimeout(() => socket.emit('stopTyping', { projectId }), 1500);
   };
 
+  const send = () => {
+    if (!input.trim() || !socket) return;
+    socket.emit('sendProjectMessage', { projectId, content: input.trim() });
+    clearTimeout(typingTimer.current);
+    socket.emit('stopTyping', { projectId });
+    setInput('');
+  };
+
+  const isOwner = (msg) => project?.createdBy?._id === (typeof msg.sender === 'object' ? msg.sender._id : msg.sender);
+  const isMine = (msg) => (typeof msg.sender === 'object' ? msg.sender._id : msg.sender) === user?._id;
+
+  if (loading) return (
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 'calc(100vh - var(--nav-h))', color: 'var(--muted)' }}>Loading chat…</div>
+  );
+
   return (
-    <div className="flex flex-col h-screen bg-gray-50">
+    <div style={{ display: 'flex', flexDirection: 'column', height: 'calc(100vh - var(--nav-h))' }}>
       {/* Header */}
-      <div className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white p-4 text-lg font-semibold flex items-center">
-        <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-        </svg>
-        Project Chat
+      <div style={{ padding: '14px 20px', background: 'var(--surface)', borderBottom: '1.5px solid var(--border)', display: 'flex', alignItems: 'center', gap: 12 }}>
+        <button onClick={() => navigate(-1)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--muted)', padding: 4 }}>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="15,18 9,12 15,6"/></svg>
+        </button>
+        <div>
+          <div style={{ fontWeight: 700, fontSize: '0.95rem' }}>{project?.title || 'Project Chat'}</div>
+          <div style={{ fontSize: '0.75rem', color: 'var(--muted)' }}>by {typeof project?.createdBy === 'object' ? project.createdBy.name : 'Senior'}</div>
+        </div>
       </div>
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4">
-        {messages.map((msg) => {
-          if (!msg?.sender || !msg.sender._id) return null; // Skip invalid messages
-
-          const isSender = msg.sender._id === user?._id;
-          const isOwner = projectOwner && msg.sender._id === projectOwner._id;
-
+      <div style={{ flex: 1, overflowY: 'auto', padding: '20px', display: 'flex', flexDirection: 'column', gap: 12, background: 'var(--bg)' }}>
+        {messages.length === 0 && (
+          <div style={{ textAlign: 'center', padding: '48px 20px', color: 'var(--muted)' }}>
+            <div style={{ fontSize: 36, marginBottom: 12 }}>💬</div>
+            <p style={{ fontWeight: 600, marginBottom: 4 }}>No messages yet</p>
+            <p style={{ fontSize: '0.875rem' }}>Start the conversation!</p>
+          </div>
+        )}
+        {messages.map(msg => {
+          if (!msg?.sender) return null;
+          const mine = isMine(msg);
+          const owner = isOwner(msg);
+          const senderName = typeof msg.sender === 'object' ? msg.sender.name : 'Unknown';
           return (
-            <div key={msg._id} className={`flex ${isSender ? 'justify-end' : 'justify-start'}`}>
-              <div
-                className={`p-4 rounded-2xl max-w-xs md:max-w-md ${
-                  isSender
-                    ? 'bg-indigo-600 text-white rounded-br-none'
-                    : 'bg-white border border-gray-200 rounded-bl-none shadow-sm'
-                }`}
-              >
-                <p className="text-sm font-medium mb-1">
-                  {isOwner ? <span className="text-yellow-300">👑 Owner</span> : msg.sender.name || 'Unknown'}
-                </p>
-                <p className="text-sm">{msg.content}</p>
-                <p className="text-xs opacity-70 mt-2 text-right">
-                  {new Date(msg.createdAt).toLocaleTimeString([], {
-                    hour: '2-digit',
-                    minute: '2-digit',
-                  })}
-                </p>
+            <div key={msg._id} style={{ display: 'flex', justifyContent: mine ? 'flex-end' : 'flex-start' }}>
+              <div style={{ maxWidth: '72%', display: 'flex', flexDirection: 'column', gap: 3, alignItems: mine ? 'flex-end' : 'flex-start' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                  {!mine && (
+                    <span style={{ fontSize: '0.75rem', fontWeight: 600, color: owner ? 'var(--brand)' : 'var(--muted)' }}>
+                      {owner ? '👑 ' : ''}{senderName}
+                    </span>
+                  )}
+                </div>
+                <div style={{
+                  padding: '10px 14px', borderRadius: mine ? '14px 14px 4px 14px' : '14px 14px 14px 4px',
+                  background: mine ? 'var(--brand)' : 'var(--surface)',
+                  color: mine ? '#fff' : 'var(--text)',
+                  border: mine ? 'none' : '1.5px solid var(--border)',
+                  fontSize: '0.875rem', lineHeight: 1.5,
+                  boxShadow: mine ? '0 2px 8px rgba(91,76,245,0.2)' : 'var(--shadow)',
+                }}>
+                  {msg.content}
+                </div>
+                <div style={{ fontSize: '0.7rem', color: 'var(--muted)' }}>
+                  {new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                </div>
               </div>
             </div>
           );
         })}
-        <div ref={messagesEndRef} />
+        {typing && (
+          <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+            <div style={{ background: 'var(--surface)', border: '1.5px solid var(--border)', borderRadius: '14px 14px 14px 4px', padding: '10px 14px', display: 'flex', gap: 4 }}>
+              {[0, 1, 2].map(i => (
+                <div key={i} style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--muted)', animation: `bounce 1.2s ${i * 0.2}s ease-in-out infinite` }} />
+              ))}
+            </div>
+          </div>
+        )}
+        <div ref={bottomRef} />
       </div>
 
       {/* Input */}
-      <div className="p-4 bg-white border-t border-gray-200">
-        <div className="flex space-x-2">
-          <input
-            className="flex-1 border border-gray-300 px-4 py-3 rounded-full focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition"
-            value={newMessage}
-            onChange={(e) => setNewMessage(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && sendMessage()}
-            placeholder="Type your message..."
-          />
-          <button
-            onClick={sendMessage}
-            className="bg-indigo-600 text-white p-3 rounded-full hover:bg-indigo-700 transition-colors shadow-md"
-          >
-            <FiSend className="w-5 h-5" />
-          </button>
-        </div>
+      <div style={{ padding: '14px 20px', background: 'var(--surface)', borderTop: '1.5px solid var(--border)', display: 'flex', gap: 10 }}>
+        <input
+          className="input"
+          style={{ flex: 1, borderRadius: 24 }}
+          value={input}
+          onChange={e => handleInput(e.target.value)}
+          onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); } }}
+          placeholder="Type a message…"
+        />
+        <button
+          onClick={send}
+          disabled={!input.trim()}
+          style={{
+            width: 42, height: 42, borderRadius: '50%',
+            background: input.trim() ? 'var(--brand)' : 'var(--surface2)',
+            border: 'none', cursor: input.trim() ? 'pointer' : 'not-allowed',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            transition: 'background 0.15s', flexShrink: 0,
+          }}
+        >
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={input.trim() ? '#fff' : 'var(--muted)'} strokeWidth="2.5"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22,2 15,22 11,13 2,9"/></svg>
+        </button>
       </div>
+
+      <style>{`@keyframes bounce { 0%,80%,100%{transform:translateY(0)} 40%{transform:translateY(-6px)} }`}</style>
     </div>
   );
 }

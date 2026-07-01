@@ -1,503 +1,149 @@
-
-//all good 
-
-
-// import { Link } from 'react-router-dom';
-// import { useAuth } from '../context/AuthContext';
-// import { FiBook, FiPlus, FiAward, FiCode, FiLayers } from 'react-icons/fi';
-// import { motion } from 'framer-motion';
-// //import { useRef } from 'react';
-// import { useInView } from 'react-intersection-observer';
-
-// export default function Home() {
-//   const { user } = useAuth();
-//   const [ref, inView] = useInView({
-//     triggerOnce: true,
-//     threshold: 0.1,
-//   });
-
-//   const features = [
-//     {
-//       icon: <FiAward className="h-8 w-8" />,
-//       title: "Build Your Portfolio",
-//       description: "Showcase your best work to potential employers and academic institutions with a professional portfolio."
-//     },
-//     {
-//       icon: <FiCode className="h-8 w-8" />,
-//       title: "Develop Real Skills",
-//       description: "Work on practical projects that enhance your technical and collaborative skills beyond the classroom."
-//     },
-//     {
-//       icon: <FiLayers className="h-8 w-8" />,
-//       title: "Cross-Disciplinary Learning",
-//       description: "Explore projects from different fields and discover new interests and applications for your skills."
-//     }
-//   ];
-
-//   return (
-//     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50">
-//       {/* Floating Background Elements */}
-//       <div className="fixed inset-0 overflow-hidden pointer-events-none">
-//         {[...Array(15)].map((_, i) => (
-//           <motion.div
-//             key={i}
-//             className="absolute rounded-full bg-indigo-100 opacity-20"
-//             style={{
-//               width: Math.random() * 100 + 50,
-//               height: Math.random() * 100 + 50,
-//               left: `${Math.random() * 100}%`,
-//               top: `${Math.random() * 100}%`,
-//             }}
-//             animate={{
-//               y: [0, Math.random() * 100 - 50],
-//               x: [0, Math.random() * 100 - 50],
-//               opacity: [0.1, 0.3, 0.1],
-//             }}
-//             transition={{
-//               duration: Math.random() * 20 + 10,
-//               repeat: Infinity,
-//               repeatType: 'reverse',
-//               ease: 'easeInOut',
-//             }}
-//           />
-//         ))}
-//       </div>
-
-//       {/* Main Content */}
-//       <div className="relative z-10">
-//         {/* Hero Section */}
-//         <motion.div 
-//           initial={{ opacity: 0, y: 20 }}
-//           animate={{ opacity: 1, y: 0 }}
-//           transition={{ duration: 0.8 }}
-//           className="text-center py-32 px-4 sm:px-6 lg:px-8"
-//         >
-//           <motion.div
-//             whileHover={{ scale: 1.02 }}
-//             className="max-w-4xl mx-auto bg-white/80 backdrop-blur-sm p-8 rounded-3xl shadow-xl border border-white/20"
-//           >
-//             <h1 className="text-5xl md:text-7xl font-bold text-gray-900 mb-6 bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-purple-600">
-//               Showcase Your <span className="text-primary">Student Projects</span>
-//             </h1>
-//             <p className="text-xl md:text-2xl text-gray-600 mb-8 max-w-3xl mx-auto">
-//               A platform to discover, share, and collaborate on innovative student projects across all disciplines.
-//               {user && (
-//                 <motion.span 
-//                   initial={{ opacity: 0 }}
-//                   animate={{ opacity: 1 }}
-//                   className="block mt-2 text-indigo-600"
-//                 >
-//                   Welcome back, {user.name}!
-//                 </motion.span>
-//               )}
-//             </p>
-//             <div className="flex flex-wrap justify-center gap-4">
-//               {user ? (
-//                 <>
-//                   <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-//                     <Link
-//                       to="/projects"
-//                       className="flex items-center bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-8 py-4 rounded-xl text-lg font-medium transition-all shadow-lg hover:shadow-xl hover:from-indigo-700 hover:to-purple-700"
-//                     >
-//                       <FiBook className="mr-2" />
-//                       Browse Projects
-//                     </Link>
-//                   </motion.div>
-//                   <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-//                     <Link
-//                       to="/projects/create"
-//                       className="flex items-center border-2 border-indigo-600 text-indigo-600 hover:bg-indigo-50 px-8 py-4 rounded-xl text-lg font-medium transition-all"
-//                     >
-//                       <FiPlus className="mr-2" />
-//                       Add Project
-//                     </Link>
-//                   </motion.div>
-//                 </>
-//               ) : (
-//                 <>
-//                   <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-//                     <Link
-//                       to="/login"
-//                       className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-8 py-4 rounded-xl text-lg font-medium transition-all shadow-lg hover:shadow-xl hover:from-indigo-700 hover:to-purple-700"
-//                     >
-//                       Login
-//                     </Link>
-//                   </motion.div>
-//                   <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-//                     <Link
-//                       to="/register"
-//                       className="border-2 border-indigo-600 text-indigo-600 hover:bg-indigo-50 px-8 py-4 rounded-xl text-lg font-medium transition-all"
-//                     >
-//                       Register
-//                     </Link>
-//                   </motion.div>
-//                 </>
-//               )}
-//             </div>
-//           </motion.div>
-//         </motion.div>
-
-//         {/* Features Section */}
-//         <div ref={ref} className="py-16 px-4 sm:px-6 lg:px-8">
-//           <div className="max-w-7xl mx-auto">
-//             <motion.div 
-//               initial={{ opacity: 0 }}
-//               animate={inView ? { opacity: 1 } : {}}
-//               transition={{ duration: 0.6 }}
-//               className="text-center mb-16"
-//             >
-//               <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-//                 Empower Your <span className="text-primary">Academic Journey</span>
-//               </h2>
-//               <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-//                 Our platform helps you turn ideas into reality with the support of a vibrant student community.
-//               </p>
-//             </motion.div>
-            
-//             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-//               {features.map((feature, index) => (
-//                 <motion.div
-//                   key={index}
-//                   initial={{ opacity: 0, y: 20 }}
-//                   animate={inView ? { opacity: 1, y: 0 } : {}}
-//                   transition={{ duration: 0.5, delay: index * 0.1 }}
-//                   whileHover={{ y: -10 }}
-//                   className="p-8 bg-white rounded-2xl border border-gray-100 shadow-lg hover:shadow-xl transition-all"
-//                 >
-//                   <div className="bg-gradient-to-r from-indigo-100 to-purple-100 p-4 rounded-2xl w-16 h-16 flex items-center justify-center mb-6">
-//                     {feature.icon}
-//                   </div>
-//                   <h3 className="text-2xl font-semibold mb-3">{feature.title}</h3>
-//                   <p className="text-gray-600">{feature.description}</p>
-//                 </motion.div>
-//               ))}
-//             </div>
-//           </div>
-//         </div>
-
-//         {/* Stats Section */}
-//         <div className="py-16 bg-gradient-to-r from-indigo-50 to-purple-50">
-//           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-//             <motion.div 
-//               initial={{ opacity: 0 }}
-//               animate={inView ? { opacity: 1 } : {}}
-//               transition={{ duration: 0.6 }}
-//               className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center"
-//             >
-//               {[
-//                 { value: "500+", label: "Active Projects" },
-//                 { value: "1.2K+", label: "Student Members" },
-//                 { value: "50+", label: "Academic Institutions" },
-//                 { value: "15+", label: "Project Categories" }
-//               ].map((stat, index) => (
-//                 <motion.div
-//                   key={index}
-//                   whileHover={{ scale: 1.05 }}
-//                   className="p-6 bg-white rounded-xl shadow-md"
-//                 >
-//                   <p className="text-4xl font-bold text-indigo-600 mb-2">{stat.value}</p>
-//                   <p className="text-gray-600">{stat.label}</p>
-//                 </motion.div>
-//               ))}
-//             </motion.div>
-//           </div>
-//         </div>
-
-//         {/* Call to Action */}
-//         {!user && (
-//           <div className="py-20 bg-gradient-to-r from-indigo-600 to-purple-600 text-white">
-//             <div className="max-w-4xl mx-auto px-4 text-center">
-//               <motion.h2 
-//                 initial={{ opacity: 0, y: 20 }}
-//                 animate={{ opacity: 1, y: 0 }}
-//                 transition={{ duration: 0.6 }}
-//                 className="text-3xl md:text-4xl font-bold mb-6"
-//               >
-//                 Ready to showcase your work?
-//               </motion.h2>
-//               <motion.p 
-//                 initial={{ opacity: 0, y: 20 }}
-//                 animate={{ opacity: 1, y: 0 }}
-//                 transition={{ duration: 0.6, delay: 0.2 }}
-//                 className="text-xl mb-8 opacity-90"
-//               >
-//                 Join thousands of students who are building their portfolios and collaborating on amazing projects.
-//               </motion.p>
-//               <motion.div
-//                 initial={{ opacity: 0, y: 20 }}
-//                 animate={{ opacity: 1, y: 0 }}
-//                 transition={{ duration: 0.6, delay: 0.4 }}
-//                 whileHover={{ scale: 1.05 }}
-//                 whileTap={{ scale: 0.95 }}
-//               >
-//                 <Link
-//                   to="/register"
-//                   className="inline-block bg-white text-indigo-600 px-10 py-4 rounded-lg text-lg font-bold hover:bg-gray-100 transition-all shadow-lg"
-//                 >
-//                   Get Started - It's Free
-//                 </Link>
-//               </motion.div>
-//             </div>
-//           </div>
-//         )}
-//       </div>
-//     </div>
-//   );
-// }
-
-
-
-
-
-
-
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { FiBook, FiPlus, FiAward, FiCode, FiLayers } from 'react-icons/fi';
-import { motion, setDragLock } from 'framer-motion';
-import { useInView } from 'react-intersection-observer';
+
+const FEATURES = [
+  { icon: '💡', title: 'Project Ideas', desc: 'Browse 100s of project ideas shared by seniors across every tech domain.' },
+  { icon: '🗺️', title: 'AI Roadmaps', desc: 'Get a personalized week-by-week learning roadmap powered by AI.' },
+  { icon: '📄', title: 'ATS Resume Checker', desc: 'Upload your resume and get an instant ATS score with improvements.' },
+  { icon: '🏢', title: 'Company Wiki', desc: 'Know exactly what happens in interviews at Google, Microsoft, Razorpay and more.' },
+  { icon: '😬', title: 'Regret Board', desc: 'Anonymous confessions from seniors — what they wish they did earlier.' },
+  { icon: '🤝', title: 'Mentor Connect', desc: 'Request a 1-on-1 session with a senior who built what you want to build.' },
+];
+
+const STATS = [
+  { value: '500+', label: 'Project ideas' },
+  { value: '1.2K+', label: 'Students' },
+  { value: '200+', label: 'Senior paths' },
+  { value: '50+', label: 'Companies covered' },
+];
 
 export default function Home() {
   const { user } = useAuth();
-  const [ref, inView] = useInView({
-    triggerOnce: true,
-    threshold: 0.1,
-  });
-
-  const features = [
-    {
-      icon: <FiAward className="h-6 w-6 md:h-8 md:w-8" />,
-      title: "Build Your Portfolio",
-      description: "Showcase your best work to potential employers and academic institutions with a professional portfolio."
-    },
-    {
-      icon: <FiCode className="h-6 w-6 md:h-8 md:w-8" />,
-      title: "Develop Real Skills",
-      description: "Work on practical projects that enhance your technical and collaborative skills beyond the classroom."
-    },
-    {
-      icon: <FiLayers className="h-6 w-6 md:h-8 md:w-8" />,
-      title: "Cross-Disciplinary Learning",
-      description: "Explore projects from different fields and discover new interests and applications for your skills."
-    }
-  ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 overflow-x-hidden">
-      {/* Floating Background Elements - Reduced for mobile */}
-      <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        {[...Array(10)].map((_, i) => (
-          <motion.div
-            key={i}
-            className="absolute rounded-full bg-indigo-100 opacity-20"
-            style={{
-              width: Math.random() * 60 + 30, // Smaller on mobile
-              height: Math.random() * 60 + 30,
-              left: `${Math.random() * 100}%`,
-              top: `${Math.random() * 100}%`,
-            }}
-            animate={{
-              y: [0, Math.random() * 60 - 30], // Reduced movement
-              x: [0, Math.random() * 60 - 30],
-              opacity: [0.1, 0.3, 0.1],
-            }}
-            transition={{
-              duration: Math.random() * 20 + 10,
-              repeat: Infinity,
-              repeatType: 'reverse',
-              ease: 'easeInOut',
-            }}
-          />
-        ))}
-      </div>
-
-      {/* Main Content */}
-      <div className="relative z-10">
-        {/* Hero Section - Mobile Optimized */}
-        <motion.div 
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8 }}
-          className="text-center pt-16 pb-12 px-4 sm:px-6 lg:px-8"
-        >
-          <motion.div
-            whileHover={{ scale: 1.02 }}
-            className="max-w-4xl mx-auto bg-white/80 backdrop-blur-sm p-6 md:p-8 rounded-3xl shadow-xl border border-white/20"
-          >
-            <h1 className="text-3xl md:text-5xl lg:text-7xl font-bold text-gray-900 mb-4 md:mb-6 bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-purple-600">
-              Showcase Your <span className="text-primary">Student Projects</span>
-            </h1>
-            <p className="text-lg md:text-xl lg:text-2xl text-gray-600 mb-6 md:mb-8 max-w-3xl mx-auto">
-              A platform to discover, share, and collaborate on innovative student projects across all disciplines.
-              {user && (
-                <motion.span 
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  className="block mt-2 text-indigo-600"
-                >
-                  Welcome back, {user.name}!
-                </motion.span>
-              )}
-            </p>
-            <div className="flex flex-col sm:flex-row justify-center gap-3 md:gap-4">
-              {user ? (
-                <>
-                  <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                    <Link
-                      to="/projects"
-                      className="flex items-center justify-center bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-6 py-3 md:px-8 md:py-4 rounded-xl text-base md:text-lg font-medium transition-all shadow-lg hover:shadow-xl hover:from-indigo-700 hover:to-purple-700"
-                    >
-                      <FiBook className="mr-2" />
-                      Browse Projects
-                    </Link>
-                  </motion.div>
-                  <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                    <Link
-                      to="/projects/create"
-                      className="flex items-center justify-center border-2 border-indigo-600 text-indigo-600 hover:bg-indigo-50 px-6 py-3 md:px-8 md:py-4 rounded-xl text-base md:text-lg font-medium transition-all"
-                    >
-                      <FiPlus className="mr-2" />
-                      Add Project
-                    </Link>
-                  </motion.div>
-                </>
-              ) : (
-                <>
-                  <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                    <Link
-                      to="/login"
-                      className="flex items-center justify-center bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-6 py-3 md:px-8 md:py-4 rounded-xl text-base md:text-lg font-medium transition-all shadow-lg hover:shadow-xl hover:from-indigo-700 hover:to-purple-700"
-                    >
-                      Login
-                    </Link>
-                  </motion.div>
-                  <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                    <Link
-                      to="/register"
-                      className="flex items-center justify-center border-2 border-indigo-600 text-indigo-600 hover:bg-indigo-50 px-6 py-3 md:px-8 md:py-4 rounded-xl text-base md:text-lg font-medium transition-all"
-                    >
-                      Register
-                    </Link>
-                  </motion.div>
-                </>
-              )}
-            </div>
-          </motion.div>
-        </motion.div>
-
-        {/* Features Section - Mobile Optimized */}
-        <div ref={ref} className="py-12 px-4 sm:px-6 lg:px-8">
-          <div className="max-w-7xl mx-auto">
-            <motion.div 
-              initial={{ opacity: 0 }}
-              animate={inView ? { opacity: 1 } : {}}
-              transition={{ duration: 0.6 }}
-              className="text-center mb-12"
-            >
-              <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-gray-900 mb-3 md:mb-4">
-                Empower Your <span className="text-primary">Academic Journey</span>
-              </h2>
-              <p className="text-base md:text-xl text-gray-600 max-w-3xl mx-auto">
-                Our platform helps you turn ideas into reality with the support of a vibrant student community.
-              </p>
-            </motion.div>
-            
-            <div className="grid grid-cols-1 gap-6 md:grid-cols-3 md:gap-8">
-              {features.map((feature, index) => (
-                <motion.div
-                  key={index}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={inView ? { opacity: 1, y: 0 } : {}}
-                  transition={{ duration: 0.5, delay: index * 0.1 }}
-                  whileHover={{ y: -10 }}
-                  className="p-6 md:p-8 bg-white rounded-2xl border border-gray-100 shadow-lg hover:shadow-xl transition-all"
-                >
-                  <div className="bg-gradient-to-r from-indigo-100 to-purple-100 p-3 md:p-4 rounded-2xl w-14 h-14 md:w-16 md:h-16 flex items-center justify-center mb-4 md:mb-6">
-                    {feature.icon}
-                  </div>
-                  <h3 className="text-xl md:text-2xl font-semibold mb-2 md:mb-3">{feature.title}</h3>
-                  <p className="text-sm md:text-base text-gray-600">{feature.description}</p>
-                </motion.div>
-              ))}
-            </div>
+    <div style={{ overflowX: 'hidden' }}>
+      {/* Hero */}
+      <section style={{
+        padding: '80px 20px 60px',
+        textAlign: 'center',
+        background: 'linear-gradient(160deg, #f0edff 0%, #f8f7ff 50%, #fff5ed 100%)',
+        borderBottom: '1.5px solid var(--border)',
+      }}>
+        <div style={{ maxWidth: 760, margin: '0 auto' }}>
+          <div style={{ display: 'inline-block', background: 'var(--brand-light)', color: 'var(--brand)', padding: '6px 16px', borderRadius: 99, fontSize: '0.8rem', fontWeight: 700, marginBottom: 24, letterSpacing: 0.5 }}>
+            🎓 Built for engineering students
+          </div>
+          <h1 style={{ fontWeight: 800, fontSize: 'clamp(2rem, 5vw, 3.4rem)', lineHeight: 1.15, letterSpacing: -1.5, marginBottom: 20, color: 'var(--text)' }}>
+            Your college-to-career{' '}
+            <span style={{ color: 'var(--brand)' }}>operating system</span>
+          </h1>
+          <p style={{ fontSize: 'clamp(1rem, 2vw, 1.2rem)', color: 'var(--muted)', lineHeight: 1.7, maxWidth: 560, margin: '0 auto 36px' }}>
+            Project ideas, AI roadmaps, interview prep, salary data, and senior wisdom — everything you need from Year 1 to placement.
+          </p>
+          <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
+            {user ? (
+              <>
+                <Link to="/projects" className="btn btn-primary" style={{ padding: '13px 28px', fontSize: '0.95rem' }}>Browse ideas</Link>
+                <Link to="/roadmap" className="btn btn-outline" style={{ padding: '13px 28px', fontSize: '0.95rem' }}>Generate roadmap</Link>
+              </>
+            ) : (
+              <>
+                <Link to="/register" className="btn btn-primary" style={{ padding: '13px 28px', fontSize: '0.95rem' }}>Get started free</Link>
+                <Link to="/projects" className="btn btn-outline" style={{ padding: '13px 28px', fontSize: '0.95rem' }}>Browse ideas</Link>
+              </>
+            )}
           </div>
         </div>
+      </section>
 
-        {/* Stats Section - Mobile Optimized */}
-        <div className="py-12 md:py-16 bg-gradient-to-r from-indigo-50 to-purple-50">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <motion.div 
-              initial={{ opacity: 0 }}
-              animate={inView ? { opacity: 1 } : {}}
-              transition={{ duration: 0.6 }}
-              className="grid grid-cols-2 gap-4 md:grid-cols-4 md:gap-8 text-center"
-            >
-              {[
-                { value: "500+", label: "Active Projects" },
-                { value: "1.2K+", label: "Student Members" },
-                { value: "50+", label: "Academic Institutions" },
-                { value: "15+", label: "Project Categories" }
-              ].map((stat, index) => (
-                <motion.div
-                  key={index}
-                  whileHover={{ scale: 1.05 }}
-                  className="p-4 md:p-6 bg-white rounded-xl shadow-md"
-                >
-                  <p className="text-2xl md:text-4xl font-bold text-indigo-600 mb-1 md:mb-2">{stat.value}</p>
-                  <p className="text-xs md:text-sm text-gray-600">{stat.label}</p>
-                </motion.div>
-              ))}
-            </motion.div>
+      {/* Stats */}
+      <section style={{ background: 'var(--surface)', borderBottom: '1.5px solid var(--border)', padding: '28px 20px' }}>
+        <div style={{ maxWidth: 900, margin: '0 auto', display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 20, textAlign: 'center' }}>
+          {STATS.map(({ value, label }) => (
+            <div key={label}>
+              <div style={{ fontSize: '1.8rem', fontWeight: 800, color: 'var(--brand)', letterSpacing: -1 }}>{value}</div>
+              <div style={{ fontSize: '0.8rem', color: 'var(--muted)', fontWeight: 500, marginTop: 2 }}>{label}</div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* Features */}
+      <section style={{ padding: '72px 20px' }}>
+        <div style={{ maxWidth: 1100, margin: '0 auto' }}>
+          <div style={{ textAlign: 'center', marginBottom: 52 }}>
+            <h2 style={{ fontWeight: 800, fontSize: 'clamp(1.5rem, 3vw, 2.2rem)', letterSpacing: -0.8, marginBottom: 12 }}>Everything in one place</h2>
+            <p style={{ color: 'var(--muted)', fontSize: '1rem', maxWidth: 480, margin: '0 auto' }}>No more scattered info across Reddit, seniors' WhatsApp, and random blogs.</p>
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 20 }}>
+            {FEATURES.map(({ icon, title, desc }) => (
+              <div key={title} className="card" style={{ padding: 24, transition: 'transform 0.2s, box-shadow 0.2s' }}
+                onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-3px)'; e.currentTarget.style.boxShadow = 'var(--shadow-lg)'; }}
+                onMouseLeave={e => { e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = 'var(--shadow)'; }}
+              >
+                <div style={{ fontSize: 28, marginBottom: 12 }}>{icon}</div>
+                <h3 style={{ fontWeight: 700, fontSize: '1rem', marginBottom: 8 }}>{title}</h3>
+                <p style={{ fontSize: '0.875rem', color: 'var(--muted)', lineHeight: 1.6 }}>{desc}</p>
+              </div>
+            ))}
           </div>
         </div>
+      </section>
 
-        {/* Call to Action - Mobile Optimized */}
-        {!user && (
-          <div className="py-12 md:py-20 bg-gradient-to-r from-indigo-600 to-purple-600 text-white">
-            <div className="max-w-4xl mx-auto px-4 text-center">
-              <motion.h2 
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6 }}
-                className="text-2xl md:text-3xl lg:text-4xl font-bold mb-4 md:mb-6"
-              >
-                Ready to showcase your work?
-              </motion.h2>
-              <motion.p 
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 0.2 }}
-                className="text-base md:text-xl mb-6 md:mb-8 opacity-90"
-              >
-                Join thousands of students who are building their portfolios and collaborating on amazing projects.
-              </motion.p>
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 0.4 }}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-              >
-                <Link
-                  to="/register"
-                  className="inline-block bg-white text-indigo-600 px-6 py-3 md:px-10 md:py-4 rounded-lg text-base md:text-lg font-bold hover:bg-gray-100 transition-all shadow-lg"
-                >
-                  Get Started - It's Free
-                </Link>
-              </motion.div>
-            </div>
+      {/* Year guide */}
+      <section style={{ background: 'var(--surface2)', borderTop: '1.5px solid var(--border)', borderBottom: '1.5px solid var(--border)', padding: '72px 20px' }}>
+        <div style={{ maxWidth: 1000, margin: '0 auto' }}>
+          <h2 style={{ fontWeight: 800, fontSize: 'clamp(1.4rem, 3vw, 2rem)', letterSpacing: -0.5, textAlign: 'center', marginBottom: 48 }}>
+            Built for every year of college
+          </h2>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: 16 }}>
+            {[
+              { year: 'Year 1', color: '#d1fae5', textColor: '#065f46', emoji: '🌱', items: ['Explore project ideas', 'Build first projects', 'Learn from senior paths', 'Join clubs & hackathons'] },
+              { year: 'Year 2', color: '#dbeafe', textColor: '#1e40af', emoji: '⚡', items: ['AI roadmap generator', 'Start building in public', 'Request a mentor', 'Explore AI project ideas'] },
+              { year: 'Year 3', color: '#fef3c7', textColor: '#92400e', emoji: '🎯', items: ['Internship board', 'Market skill tracker', 'Company interview wiki', 'ATS resume checker'] },
+              { year: 'Year 4', color: '#fee2e2', textColor: '#991b1b', emoji: '🏆', items: ['Placement board', 'Salary benchmarks', 'Share your own path', 'Become a mentor'] },
+            ].map(({ year, color, textColor, emoji, items }) => (
+              <div key={year} className="card" style={{ padding: 20 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14 }}>
+                  <div style={{ width: 36, height: 36, borderRadius: 10, background: color, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18 }}>{emoji}</div>
+                  <span style={{ fontWeight: 700, color: textColor }}>{year}</span>
+                </div>
+                <ul style={{ paddingLeft: 0, listStyle: 'none', display: 'flex', flexDirection: 'column', gap: 6 }}>
+                  {items.map(item => (
+                    <li key={item} style={{ fontSize: '0.8rem', color: 'var(--muted)', display: 'flex', alignItems: 'flex-start', gap: 6 }}>
+                      <span style={{ color: textColor, flexShrink: 0, marginTop: 1 }}>✓</span> {item}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
           </div>
-        )}
-      </div>
+        </div>
+      </section>
+
+      {/* CTA */}
+      {!user && (
+        <section style={{ padding: '80px 20px', textAlign: 'center', background: 'var(--brand)' }}>
+          <h2 style={{ fontWeight: 800, fontSize: 'clamp(1.5rem, 3vw, 2.2rem)', color: '#fff', marginBottom: 16, letterSpacing: -0.5 }}>
+            Start your journey today
+          </h2>
+          <p style={{ color: 'rgba(255,255,255,0.75)', fontSize: '1rem', marginBottom: 32, maxWidth: 440, margin: '0 auto 32px' }}>
+            Free forever. No spam. Just a community of students helping each other.
+          </p>
+          <Link to="/register" style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: '#fff', color: 'var(--brand)', padding: '13px 32px', borderRadius: 10, fontWeight: 700, fontSize: '0.95rem', textDecoration: 'none' }}>
+            Create free account →
+          </Link>
+        </section>
+      )}
+
+      <style>{`
+        @media (max-width: 640px) {
+          section > div { grid-template-columns: repeat(2, 1fr) !important; }
+        }
+        @media (max-width: 400px) {
+          section > div { grid-template-columns: 1fr !important; }
+        }
+      `}</style>
     </div>
   );
 }
-
-
-
-
-
-
-
-
-

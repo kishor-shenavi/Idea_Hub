@@ -9,16 +9,15 @@ passport.use(new GoogleStrategy({
 }, async (accessToken, refreshToken, profile, done) => {
   try {
     let user = await User.findOne({ googleId: profile.id });
-
     if (!user) {
       user = await User.create({
         googleId: profile.id,
         email: profile.emails[0].value,
         name: profile.displayName,
-        role: 'student'
+        role: 'student',
+        isVerified: true,
       });
     }
-
     return done(null, user);
   } catch (err) {
     return done(err, null);
