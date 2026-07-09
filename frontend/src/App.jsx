@@ -16,6 +16,7 @@ import Internships from './pages/Internships';
 import RegretBoard from './pages/RegretBoard';
 import Roadmap from './pages/Roadmap';
 import ResumeScan from './pages/ResumeScan';
+import MockInterview from './pages/MockInterview';
 
 import CreateProject from './components/CreateProject';
 import EditProject from './components/EditProject';
@@ -46,6 +47,7 @@ function AppContent() {
           <Route path="/chat/:projectId/:userId" element={<Chat />} />
           <Route path="/roadmap" element={<Roadmap />} />
           <Route path="/resume" element={<ResumeScan />} />
+          <Route path="/interview" element={<MockInterview />} />
         </Route>
 
         {/* Admin */}

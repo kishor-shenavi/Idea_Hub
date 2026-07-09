@@ -13,6 +13,7 @@ router.use('/buildlogs', require('./buildLogRoutes'));
 router.use('/mentor', require('./mentorRoutes'));
 router.use('/roadmap', require('./roadmapRoutes'));
 router.use('/resume', require('./resumeRoutes'));
+router.use('/interview', require('./interviewRoutes'));
 router.use('/admin', require('./adminRoutes'));
 
 router.get('/health', (req, res) => {
