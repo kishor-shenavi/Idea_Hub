@@ -22,6 +22,7 @@ import CreateProject from './components/CreateProject';
 import EditProject from './components/EditProject';
 import AdminPanel from './components/AdminPanel';
 import GithubIntelligence from './pages/GithubIntelligence';
+import ExtemporeCoach from './pages/ExtemporeCoach';
 
 import './index.css';
 
@@ -50,6 +51,7 @@ function AppContent() {
           <Route path="/resume" element={<ResumeScan />} />
           <Route path="/interview" element={<MockInterview />} />
           <Route path="/github-intelligence" element={<GithubIntelligence />} />
+          <Route path="/extempore-coach" element={<ExtemporeCoach />} />
         </Route>
 
         {/* Admin */}
