@@ -9,6 +9,7 @@
   "dependencies": {
     "@google/genai": "^0.7.0",
     "@octokit/rest": "^22.0.1",
+    "assemblyai": "^4.35.4",
     "axios": "^1.7.2",
     "bcryptjs": "^3.0.2",
     "cookie-parser": "^1.4.7",
