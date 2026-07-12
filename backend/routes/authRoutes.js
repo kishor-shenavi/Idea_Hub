@@ -24,6 +24,22 @@ router.get('/google/callback',
   }
 );
 
+ // GitHub account linking — token passed via query since this is a full page redirect, not an axios call
+router.get('/github/oauth', (req, res, next) => {
+  const token = req.query.token;
+  if (!token) {
+    return res.status(401).json({ success: false, error: 'Missing auth token' });
+  }
+  passport.authenticate('github', { scope: ['read:user', 'repo'], state: token })(req, res, next);
+});
+
+router.get('/github/callback',
+  passport.authenticate('github', { session: false }),
+  (req, res) => {
+    res.redirect(`${process.env.CLIENT_URL}/github-intelligence`);
+  }
+);
+
 router.get('/me', protect, getMe);
 router.patch('/updateme', protect, updateMe);
 router.patch('/changepassword', protect, changePassword);

@@ -21,6 +21,7 @@ import MockInterview from './pages/MockInterview';
 import CreateProject from './components/CreateProject';
 import EditProject from './components/EditProject';
 import AdminPanel from './components/AdminPanel';
+import GithubIntelligence from './pages/GithubIntelligence';
 
 import './index.css';
 
@@ -48,6 +49,7 @@ function AppContent() {
           <Route path="/roadmap" element={<Roadmap />} />
           <Route path="/resume" element={<ResumeScan />} />
           <Route path="/interview" element={<MockInterview />} />
+          <Route path="/github-intelligence" element={<GithubIntelligence />} />
         </Route>
 
         {/* Admin */}

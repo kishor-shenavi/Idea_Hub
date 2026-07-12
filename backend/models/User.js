@@ -20,6 +20,10 @@ const userSchema = new mongoose.Schema({
   avatar: { type: String },
   linkedinUrl: { type: String },
   githubUrl: { type: String },
+  
+   githubId: { type: String, unique: true, sparse: true },
+githubUsername: { type: String },
+githubAccessToken: { type: String, select: false }, // needed to call GitHub API on user's behalf
 
   // Student preferences for Opportunity Radar
   interests: [{ type: String }],

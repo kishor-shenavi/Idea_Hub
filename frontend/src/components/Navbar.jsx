@@ -87,6 +87,7 @@ export default function Navbar() {
                     <Link to="/roadmap" style={menuItemStyle} onClick={() => setMenuOpen(false)}>My Roadmap</Link>
                     <Link to="/resume" style={menuItemStyle} onClick={() => setMenuOpen(false)}>Resume ATS</Link>
                     <Link to="/interview" style={menuItemStyle} onClick={() => setMenuOpen(false)}>AI Mock Interview</Link>
+                    <Link to="/github-intelligence" style={menuItemStyle} onClick={() => setMenuOpen(false)}>GitHub Intelligence</Link>
                     <Link to="/buildlogs" style={menuItemStyle} onClick={() => setMenuOpen(false)}>Build in Public</Link>
                     <button onClick={() => { logout(); setMenuOpen(false); }} style={{ ...menuItemStyle, width: '100%', textAlign: 'left', border: 'none', background: 'transparent', cursor: 'pointer', color: 'var(--danger)' }}>
                       Sign out
