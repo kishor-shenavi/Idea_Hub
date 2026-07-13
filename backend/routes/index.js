@@ -18,6 +18,7 @@ router.use('/admin', require('./adminRoutes'));
 router.use('/github', require('./githubRoutes'));
 router.use('/extempore', require('./extemporeRoutes'));
 router.use('/gd', require('./gdRoutes'));
+router.use('/viva', require('./vivaRoutes'));
 
 router.get('/health', (req, res) => {
   res.status(200).json({ success: true, message: 'IdeaHub API is running' });

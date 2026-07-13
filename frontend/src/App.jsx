@@ -24,6 +24,7 @@ import AdminPanel from './components/AdminPanel';
 import GithubIntelligence from './pages/GithubIntelligence';
 import ExtemporeCoach from './pages/ExtemporeCoach';
 import GDSimulator from './pages/GDSimulator';
+import VivaSimulator from './pages/VivaSimulator';
 import './index.css';
 
 function AppContent() {
@@ -53,6 +54,7 @@ function AppContent() {
           <Route path="/github-intelligence" element={<GithubIntelligence />} />
           <Route path="/extempore-coach" element={<ExtemporeCoach />} />
           <Route path="/gd-simulator" element={<GDSimulator />} />
+          <Route path="/viva-simulator" element={<VivaSimulator />} />
         </Route>
 
         {/* Admin */}
