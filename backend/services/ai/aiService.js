@@ -72,10 +72,28 @@ async function generateAI(prompt, systemPrompt = "") {
 
 // ─── JSON-safe wrapper ────────────────────────────────────────────────────────
 
+// async function generateAIJson(prompt, systemPrompt = "") {
+//   const raw = await generateAI(prompt, systemPrompt);
+//   try {
+//     const clean = raw.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim();
+//     return JSON.parse(clean);
+//   } catch (e) {
+//     console.error("JSON parse failed. Raw output:", raw.slice(0, 300));
+//     throw new Error("AI returned invalid JSON. Please try again.");
+//   }
+// }
 async function generateAIJson(prompt, systemPrompt = "") {
   const raw = await generateAI(prompt, systemPrompt);
   try {
-    const clean = raw.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim();
+    let clean = raw.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim();
+
+    // NEW: extract the JSON object even if the model added prose before/after it
+    const firstBrace = clean.indexOf("{");
+    const lastBrace = clean.lastIndexOf("}");
+    if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
+      clean = clean.slice(firstBrace, lastBrace + 1);
+    }
+
     return JSON.parse(clean);
   } catch (e) {
     console.error("JSON parse failed. Raw output:", raw.slice(0, 300));

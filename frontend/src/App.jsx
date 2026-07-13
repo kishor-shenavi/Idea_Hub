@@ -23,7 +23,7 @@ import EditProject from './components/EditProject';
 import AdminPanel from './components/AdminPanel';
 import GithubIntelligence from './pages/GithubIntelligence';
 import ExtemporeCoach from './pages/ExtemporeCoach';
-
+import GDSimulator from './pages/GDSimulator';
 import './index.css';
 
 function AppContent() {
@@ -52,6 +52,7 @@ function AppContent() {
           <Route path="/interview" element={<MockInterview />} />
           <Route path="/github-intelligence" element={<GithubIntelligence />} />
           <Route path="/extempore-coach" element={<ExtemporeCoach />} />
+          <Route path="/gd-simulator" element={<GDSimulator />} />
         </Route>
 
         {/* Admin */}

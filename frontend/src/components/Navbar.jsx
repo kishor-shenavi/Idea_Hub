@@ -89,6 +89,7 @@ export default function Navbar() {
                     <Link to="/interview" style={menuItemStyle} onClick={() => setMenuOpen(false)}>AI Mock Interview</Link>
                     <Link to="/github-intelligence" style={menuItemStyle} onClick={() => setMenuOpen(false)}>GitHub Intelligence</Link>
                     <Link to="/extempore-coach" style={menuItemStyle} onClick={() => setMenuOpen(false)}>Extempore Coach</Link>
+                    <Link to="/gd-simulator" style={menuItemStyle} onClick={() => setMenuOpen(false)}>GD Simulator</Link>
                     <Link to="/buildlogs" style={menuItemStyle} onClick={() => setMenuOpen(false)}>Build in Public</Link>
                     <button onClick={() => { logout(); setMenuOpen(false); }} style={{ ...menuItemStyle, width: '100%', textAlign: 'left', border: 'none', background: 'transparent', cursor: 'pointer', color: 'var(--danger)' }}>
                       Sign out
