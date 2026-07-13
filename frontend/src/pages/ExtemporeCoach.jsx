@@ -2,6 +2,7 @@ import { useState, useRef } from 'react';
 import axios from '../api/axios';
 import { analyzeAudioBlob } from '../utils/audioAnalysis';
 import SpeechTimeline from '../components/SpeechTimeline';
+import LoadingSpinner from '../components/LoadingSpinner';
 
 const TOPICS = [
   'Should college students take a gap year?',
@@ -48,7 +49,7 @@ export default function ExtemporeCoach() {
     const blob = new Blob(chunks.current, { type: 'audio/webm' });
 
     try {
-      const audioAnalysis = await analyzeAudioBlob(blob); // Phase 2: client-side DSP, runs before upload
+      const audioAnalysis = await analyzeAudioBlob(blob);
 
       const formData = new FormData();
       formData.append('audio', blob, 'speech.webm');
@@ -64,62 +65,112 @@ export default function ExtemporeCoach() {
     } finally { setLoading(false); }
   };
 
+  const fmt = s => `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`;
+
   return (
-    <div className="page-container" style={{ maxWidth: 860 }}>
-      <h1 style={{ fontWeight: 800, fontSize: '1.8rem' }}>Extempore Coach</h1>
+    <div className="page-container" style={{ maxWidth: 820 }}>
+      <LoadingSpinner show={loading} />
 
-      <div style={{ marginBottom: 16 }}>
-        <select
-          value={TOPICS.includes(topic) ? topic : ''}
-          onChange={e => setTopic(e.target.value)}
-          disabled={recording}
-          style={{ marginBottom: 8, width: '100%' }}
-        >
-          <option value="">-- Pick a suggested topic --</option>
-          {TOPICS.map(t => <option key={t} value={t}>{t}</option>)}
-        </select>
-
-        <div style={{ textAlign: 'center', fontSize: '0.8rem', color: 'var(--muted)', margin: '6px 0' }}>or</div>
-
-        <input
-          type="text"
-          placeholder="Type your own topic"
-          value={topic}
-          onChange={e => setTopic(e.target.value)}
-          disabled={recording}
-          style={{ width: '100%', padding: '8px 12px' }}
-        />
+      <div style={{ textAlign: 'center', marginBottom: 32 }}>
+        <div style={{ width: 52, height: 52, borderRadius: 14, background: 'var(--brand)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: 24, marginBottom: 16 }}>🗣️</div>
+        <h1 style={{ fontWeight: 800, fontSize: '1.6rem', letterSpacing: -0.5 }}>Public Speaking Coach</h1>
+        <p style={{ color: 'var(--muted)', fontSize: '0.9rem', marginTop: 6, maxWidth: 480, margin: '6px auto 0' }}>
+          Speak for 60–90 seconds and get pace, filler-word, and delivery feedback.
+        </p>
       </div>
 
-      {!recording ? (
-        <button onClick={startRecording} disabled={loading}>
-          {loading ? 'Analyzing...' : 'Start Speaking'}
-        </button>
-      ) : (
-        <button onClick={stopRecording}>Stop ({seconds}s)</button>
-      )}
+      {error && <div className="error-msg" style={{ marginBottom: 20 }}>{error}</div>}
 
-      {error && <p style={{ color: 'red' }}>{error}</p>}
+      {!result && (
+        <div className="card" style={{ padding: 28 }}>
+          <label className="label">Topic</label>
+          <select
+            className="input"
+            value={TOPICS.includes(topic) ? topic : ''}
+            onChange={e => setTopic(e.target.value)}
+            disabled={recording}
+            style={{ marginBottom: 10 }}
+          >
+            <option value="">— Pick a suggested topic —</option>
+            {TOPICS.map(t => <option key={t} value={t}>{t}</option>)}
+          </select>
 
-      {result && (
-        <div style={{ marginTop: 24 }}>
-          <h2>Score: {result.coachFeedback.overallScore}/100</h2>
-          <p>
-            WPM: {result.metrics.wordsPerMinute} | Filler words: {result.metrics.fillerWordCount} |
-            Pitch variance: {result.audioAnalysis.pitchStdDev}Hz | Monotone score: {result.audioAnalysis.monotoneScore}/100
-          </p>
+          <div style={{ textAlign: 'center', fontSize: '0.75rem', color: 'var(--muted)', margin: '4px 0 10px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: 0.5 }}>or</div>
 
-          <SpeechTimeline
-            audioAnalysis={result.audioAnalysis}
-            fillerWords={result.metrics.fillerWords}
-            durationSeconds={result.durationSeconds}
+          <input
+            className="input"
+            type="text"
+            placeholder="Type your own topic"
+            value={topic}
+            onChange={e => setTopic(e.target.value)}
+            disabled={recording}
+            style={{ marginBottom: 24 }}
           />
 
-          <p style={{ marginTop: 16 }}>{result.coachFeedback.summary}</p>
-          <h3>Strengths</h3>
-          <ul>{result.coachFeedback.strengths.map(s => <li key={s}>{s}</li>)}</ul>
-          <h3>Improve</h3>
-          <ul>{result.coachFeedback.improvements.map(s => <li key={s}>{s}</li>)}</ul>
+          <div style={{ textAlign: 'center' }}>
+            {!recording ? (
+              <button onClick={startRecording} disabled={loading} className="btn btn-primary" style={{ padding: '12px 32px' }}>
+                🎙️ Start Speaking
+              </button>
+            ) : (
+              <button onClick={stopRecording} className="btn btn-danger" style={{ padding: '12px 32px' }}>
+                ⏹ Stop · {fmt(seconds)}
+              </button>
+            )}
+          </div>
+        </div>
+      )}
+
+      {result && (
+        <div className="fade-in">
+          <div className="card" style={{ padding: 28, textAlign: 'center', marginBottom: 20, background: 'linear-gradient(135deg, var(--brand-light), var(--surface))' }}>
+            <div style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 6 }}>Score</div>
+            <div style={{ fontSize: '3rem', fontWeight: 800, color: 'var(--brand)', letterSpacing: -2, marginBottom: 16 }}>
+              {result.coachFeedback.overallScore}<span style={{ fontSize: '1.2rem', color: 'var(--muted)' }}>/100</span>
+            </div>
+            <div style={{ display: 'flex', gap: 8, justifyContent: 'center', flexWrap: 'wrap' }}>
+              <span className="tag">{result.metrics.wordsPerMinute} WPM</span>
+              <span className="tag">{result.metrics.fillerWordCount} filler words</span>
+              <span className="tag">Pitch variance {result.audioAnalysis.pitchStdDev}Hz</span>
+              <span className="tag">Monotone score {result.audioAnalysis.monotoneScore}/100</span>
+            </div>
+          </div>
+
+          <div className="card" style={{ padding: 24, marginBottom: 20 }}>
+            <h3 style={{ fontWeight: 700, fontSize: '0.95rem', marginBottom: 14 }}>Delivery timeline</h3>
+            <SpeechTimeline
+              audioAnalysis={result.audioAnalysis}
+              fillerWords={result.metrics.fillerWords}
+              durationSeconds={result.durationSeconds}
+            />
+          </div>
+
+          <div className="card" style={{ padding: 24, marginBottom: 20 }}>
+            <p style={{ fontSize: '0.9rem', color: 'var(--text)', lineHeight: 1.7 }}>{result.coachFeedback.summary}</p>
+          </div>
+
+          <div className="grid-2" style={{ marginBottom: 20 }}>
+            <div className="card" style={{ padding: 24 }}>
+              <h3 style={{ fontWeight: 700, fontSize: '0.95rem', marginBottom: 14 }}>✓ Strengths</h3>
+              <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: 10 }}>
+                {result.coachFeedback.strengths.map(s => (
+                  <li key={s} style={{ fontSize: '0.875rem', display: 'flex', gap: 8 }}><span style={{ color: 'var(--success)' }}>●</span> {s}</li>
+                ))}
+              </ul>
+            </div>
+            <div className="card" style={{ padding: 24 }}>
+              <h3 style={{ fontWeight: 700, fontSize: '0.95rem', marginBottom: 14 }}>→ Improve</h3>
+              <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: 10 }}>
+                {result.coachFeedback.improvements.map(s => (
+                  <li key={s} style={{ fontSize: '0.875rem', display: 'flex', gap: 8 }}><span style={{ color: 'var(--warning)' }}>●</span> {s}</li>
+                ))}
+              </ul>
+            </div>
+          </div>
+
+          <div style={{ textAlign: 'center' }}>
+            <button onClick={() => { setResult(null); setTopic(''); }} className="btn btn-outline">Practice again</button>
+          </div>
         </div>
       )}
     </div>

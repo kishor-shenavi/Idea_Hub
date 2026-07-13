@@ -37,7 +37,7 @@ export const AuthProvider = ({ children }) => {
       localStorage.setItem('token', data.token);
       setToken(data.token);
       setUser({ ...data.user, id: data.user.id });
-      navigate('/projects');
+      navigate('/');
     } finally {
       setLoading(false);
     }
@@ -50,7 +50,7 @@ export const AuthProvider = ({ children }) => {
       localStorage.setItem('token', data.token);
       setToken(data.token);
       setUser({ ...data.user, id: data.user.id });
-      navigate('/projects');
+      navigate('/');
     } finally {
       setLoading(false);
     }
@@ -74,7 +74,7 @@ export const AuthProvider = ({ children }) => {
       localStorage.removeItem('pendingRole');
       setToken(data.token);
       setUser({ ...data.user, id: data.user.id });
-      navigate('/projects');
+      navigate('/');
     } finally {
       setLoading(false);
     }

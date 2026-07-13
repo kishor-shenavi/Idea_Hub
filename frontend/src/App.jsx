@@ -17,14 +17,15 @@ import RegretBoard from './pages/RegretBoard';
 import Roadmap from './pages/Roadmap';
 import ResumeScan from './pages/ResumeScan';
 import MockInterview from './pages/MockInterview';
-
-import CreateProject from './components/CreateProject';
-import EditProject from './components/EditProject';
-import AdminPanel from './components/AdminPanel';
 import GithubIntelligence from './pages/GithubIntelligence';
 import ExtemporeCoach from './pages/ExtemporeCoach';
 import GDSimulator from './pages/GDSimulator';
 import VivaSimulator from './pages/VivaSimulator';
+
+import CreateProject from './components/CreateProject';
+import EditProject from './components/EditProject';
+import AdminPanel from './components/AdminPanel';
+
 import './index.css';
 
 function AppContent() {
@@ -32,20 +33,20 @@ function AppContent() {
     <>
       <Navbar />
       <Routes>
-        {/* Public */}
+        {/* Public — only Home, Login, Register, OTP verification */}
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/verify-otp" element={<VerifyOtp />} />
-        <Route path="/projects" element={<Projects />} />
-        <Route path="/paths" element={<SeniorPaths />} />
-        <Route path="/internships" element={<Internships />} />
-        <Route path="/regrets" element={<RegretBoard />} />
 
-        {/* Protected */}
+        {/* Protected — everything else requires login */}
         <Route element={<ProtectedRoute />}>
+          <Route path="/projects" element={<Projects />} />
           <Route path="/projects/create" element={<CreateProject />} />
           <Route path="/projects/:id/edit" element={<EditProject />} />
+          <Route path="/paths" element={<SeniorPaths />} />
+          <Route path="/internships" element={<Internships />} />
+          <Route path="/regrets" element={<RegretBoard />} />
           <Route path="/chat/:projectId" element={<Chat />} />
           <Route path="/chat/:projectId/:userId" element={<Chat />} />
           <Route path="/roadmap" element={<Roadmap />} />

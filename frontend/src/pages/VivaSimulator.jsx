@@ -1,9 +1,12 @@
 import { useState, useRef } from 'react';
 import axios from '../api/axios';
+import LoadingSpinner from '../components/LoadingSpinner';
 
 export default function VivaSimulator() {
   const [file, setFile] = useState(null);
   const [reportTitle, setReportTitle] = useState('');
+  const [reportText, setReportText] = useState('');
+  const [inputMode, setInputMode] = useState('pdf');
   const [sessionId, setSessionId] = useState(null);
   const [question, setQuestion] = useState('');
   const [log, setLog] = useState([]);
@@ -16,16 +19,22 @@ export default function VivaSimulator() {
 
   const speak = (text) => {
     const utter = new SpeechSynthesisUtterance(text);
-    utter.pitch = 0.9; utter.rate = 0.95; // steady, serious examiner tone
+    utter.pitch = 0.9; utter.rate = 0.95;
     window.speechSynthesis.speak(utter);
   };
 
   const startViva = async () => {
-    if (!file) { setError('Upload your project/lab report PDF'); return; }
+    if (inputMode === 'pdf' && !file) { setError('Upload your project/lab report PDF'); return; }
+    if (inputMode === 'paste' && reportText.trim().length < 50) { setError('Paste at least a few paragraphs of report content'); return; }
     setError(''); setLoading(true);
+
     const formData = new FormData();
-    formData.append('report', file);
-    formData.append('reportTitle', reportTitle || file.name);
+    if (inputMode === 'pdf') {
+      formData.append('report', file);
+    } else {
+      formData.append('reportText', reportText);
+    }
+    formData.append('reportTitle', reportTitle || (file ? file.name : 'Untitled Project'));
 
     try {
       const res = await axios.post('/api/v1/viva/start', formData, {
@@ -83,60 +92,149 @@ export default function VivaSimulator() {
     } finally { setLoading(false); }
   };
 
+  const depthColor = { vague: { bg: '#fee2e2', c: '#991b1b' }, adequate: { bg: '#fef3c7', c: '#92400e' }, strong: { bg: '#d1fae5', c: '#065f46' } };
+
   if (report) {
     return (
-      <div className="page-container" style={{ maxWidth: 860 }}>
-        <h1>Viva Report</h1>
-        <h2>Score: {report.overallScore}/100</h2>
-        <p>{report.summary}</p>
-        <h3>Topic Breakdown</h3>
-        <ul>{report.topicBreakdown.map(t => <li key={t.topic}>{t.topic}: {t.depthScore}/100</li>)}</ul>
-        <h3>Strengths</h3>
-        <ul>{report.strengths.map(s => <li key={s}>{s}</li>)}</ul>
-        <h3>Weak Points</h3>
-        <ul>{report.weakPoints.map(s => <li key={s}>{s}</li>)}</ul>
+      <div className="page-container" style={{ maxWidth: 820 }}>
+        <div style={{ textAlign: 'center', marginBottom: 28 }}>
+          <h1 style={{ fontWeight: 800, fontSize: '1.6rem', letterSpacing: -0.5 }}>Viva Report</h1>
+        </div>
+        <div className="card" style={{ padding: 28, textAlign: 'center', marginBottom: 20, background: 'linear-gradient(135deg, var(--brand-light), var(--surface))' }}>
+          <div style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 6 }}>Overall Score</div>
+          <div style={{ fontSize: '3rem', fontWeight: 800, color: 'var(--brand)', letterSpacing: -2 }}>{report.overallScore}<span style={{ fontSize: '1.2rem', color: 'var(--muted)' }}>/100</span></div>
+        </div>
+
+        <div className="card" style={{ padding: 24, marginBottom: 20 }}>
+          <h3 style={{ fontWeight: 700, fontSize: '0.95rem', marginBottom: 14 }}>Topic breakdown</h3>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+            {report.topicBreakdown.map(t => (
+              <div key={t.topic}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', marginBottom: 4 }}>
+                  <span>{t.topic}</span><span style={{ fontWeight: 700 }}>{t.depthScore}/100</span>
+                </div>
+                <div style={{ height: 8, borderRadius: 99, background: 'var(--surface2)', overflow: 'hidden' }}>
+                  <div style={{ height: '100%', width: `${t.depthScore}%`, background: 'var(--brand)', borderRadius: 99 }} />
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="card" style={{ padding: 24, marginBottom: 20 }}>
+          <p style={{ fontSize: '0.9rem', lineHeight: 1.7 }}>{report.summary}</p>
+        </div>
+
+        <div className="grid-2">
+          <div className="card" style={{ padding: 24 }}>
+            <h3 style={{ fontWeight: 700, fontSize: '0.95rem', marginBottom: 14 }}>✓ Strengths</h3>
+            <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: 10 }}>
+              {report.strengths.map(s => <li key={s} style={{ fontSize: '0.875rem', display: 'flex', gap: 8 }}><span style={{ color: 'var(--success)' }}>●</span> {s}</li>)}
+            </ul>
+          </div>
+          <div className="card" style={{ padding: 24 }}>
+            <h3 style={{ fontWeight: 700, fontSize: '0.95rem', marginBottom: 14 }}>⚠ Weak points</h3>
+            <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: 10 }}>
+              {report.weakPoints.map(s => <li key={s} style={{ fontSize: '0.875rem', display: 'flex', gap: 8 }}><span style={{ color: 'var(--danger)' }}>●</span> {s}</li>)}
+            </ul>
+          </div>
+        </div>
       </div>
     );
   }
 
   if (!sessionId) {
     return (
-      <div className="page-container" style={{ maxWidth: 860 }}>
-        <h1>Viva Simulator</h1>
-        <input placeholder="Project title (optional)" value={reportTitle} onChange={e => setReportTitle(e.target.value)} style={{ width: '100%', padding: 8, marginBottom: 8 }} />
-        <input type="file" accept=".pdf" onChange={e => setFile(e.target.files[0])} />
-        <button onClick={startViva} disabled={loading}>{loading ? 'Preparing...' : 'Start Viva'}</button>
-        {error && <p style={{ color: 'red' }}>{error}</p>}
-        <p style={{ fontSize: '0.85rem', color: 'var(--muted)', marginBottom: 12 }}>
-  For the best viva experience, upload your full report — problem statement, approach/methodology, 
-  implementation details, and results/conclusion. A report with just the problem statement will still work, 
-  but the examiner will have less to probe and questions may feel repetitive.
-</p>
+      <div className="page-container" style={{ maxWidth: 620 }}>
+        <LoadingSpinner show={loading} />
+        <div style={{ textAlign: 'center', marginBottom: 32 }}>
+          <div style={{ width: 52, height: 52, borderRadius: 14, background: 'var(--brand)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: 24, marginBottom: 16 }}>🎓</div>
+          <h1 style={{ fontWeight: 800, fontSize: '1.6rem', letterSpacing: -0.5 }}>Viva Simulator</h1>
+          <p style={{ color: 'var(--muted)', fontSize: '0.9rem', marginTop: 6 }}>Upload your report and face adaptive oral-defense questioning.</p>
+        </div>
+
+        {error && <div className="error-msg" style={{ marginBottom: 16 }}>{error}</div>}
+
+        <div className="card" style={{ padding: 28 }}>
+          <label className="label">Project title</label>
+          <input className="input" placeholder="e.g. Smart Attendance System" value={reportTitle} onChange={e => setReportTitle(e.target.value)} style={{ marginBottom: 20 }} />
+
+          <p style={{ fontSize: '0.8rem', color: 'var(--muted)', marginBottom: 14, lineHeight: 1.5 }}>
+            For the best viva experience, upload your full report — problem statement, approach/methodology,
+            implementation details, and results/conclusion. A report with just the problem statement will still work,
+            but the examiner will have less to probe.
+          </p>
+
+          <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
+            <button
+              onClick={() => setInputMode('pdf')}
+              className={inputMode === 'pdf' ? 'btn btn-primary' : 'btn btn-ghost'}
+              style={{ flex: 1, justifyContent: 'center' }}
+            >Upload PDF</button>
+            <button
+              onClick={() => setInputMode('paste')}
+              className={inputMode === 'paste' ? 'btn btn-primary' : 'btn btn-ghost'}
+              style={{ flex: 1, justifyContent: 'center' }}
+            >Paste Text</button>
+          </div>
+
+          {inputMode === 'pdf' ? (
+            <div style={{ border: '1.5px dashed var(--border)', borderRadius: 'var(--radius-sm)', padding: 24, textAlign: 'center', marginBottom: 20 }}>
+              <input type="file" accept=".pdf" onChange={e => setFile(e.target.files[0])} />
+              {file && <p style={{ fontSize: '0.8rem', color: 'var(--muted)', marginTop: 10 }}>{file.name}</p>}
+            </div>
+          ) : (
+            <textarea
+              className="input"
+              placeholder="Paste your project/lab report content here (scanned PDFs can't be read automatically — paste the text instead)"
+              value={reportText}
+              onChange={e => setReportText(e.target.value)}
+              rows={8}
+              style={{ marginBottom: 20, resize: 'vertical', fontFamily: 'var(--font)' }}
+            />
+          )}
+
+          <button onClick={startViva} disabled={loading} className="btn btn-primary" style={{ width: '100%', justifyContent: 'center', padding: 12 }}>
+            {loading ? <span className="spinner" style={{ width: 14, height: 14, borderWidth: 2 }} /> : 'Start Viva'}
+          </button>
+        </div>
       </div>
-      
     );
   }
 
   return (
-    <div className="page-container" style={{ maxWidth: 860 }}>
-      <h2>Examiner: {question}</h2>
+    <div className="page-container" style={{ maxWidth: 820 }}>
+      <LoadingSpinner show={loading} />
 
-      <div style={{ maxHeight: 300, overflowY: 'auto', border: '1px solid #eee', padding: 12, borderRadius: 8, margin: '16px 0' }}>
-        {log.map((l, i) => (
-          <div key={i} style={{ marginBottom: 12 }}>
-            <p><strong>Q:</strong> {l.question}</p>
-            <p><strong>A:</strong> {l.answer} <em>[{l.rubric.depth}]</em></p>
-          </div>
-        ))}
+      <div className="card" style={{ padding: 24, marginBottom: 20, background: 'var(--brand-light)', borderColor: 'var(--brand)' }}>
+        <div style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--brand)', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 8 }}>Examiner asks</div>
+        <p style={{ fontSize: '1rem', fontWeight: 600, color: 'var(--text)', lineHeight: 1.6 }}>{question}</p>
       </div>
 
-      {!recording ? (
-        <button onClick={startAnswering} disabled={loading}>{loading ? 'Examiner is thinking...' : 'Start Answering'}</button>
-      ) : (
-        <button onClick={stopAnswering}>Stop & Submit Answer</button>
+      {error && <div className="error-msg" style={{ marginBottom: 16 }}>{error}</div>}
+
+      {log.length > 0 && (
+        <div className="card" style={{ maxHeight: 320, overflowY: 'auto', padding: 20, marginBottom: 20 }}>
+          {log.map((l, i) => (
+            <div key={i} style={{ marginBottom: 16, paddingBottom: 16, borderBottom: i < log.length - 1 ? '1px solid var(--border)' : 'none' }}>
+              <p style={{ fontSize: '0.85rem', fontWeight: 600, marginBottom: 6 }}>Q: {l.question}</p>
+              <p style={{ fontSize: '0.85rem', color: 'var(--muted)', marginBottom: 6 }}>A: {l.answer}</p>
+              <span className="tag" style={{ background: depthColor[l.rubric.depth]?.bg, color: depthColor[l.rubric.depth]?.c }}>{l.rubric.depth}</span>
+            </div>
+          ))}
+        </div>
       )}
-      <button onClick={endViva} style={{ marginLeft: 10 }} disabled={loading}>End Viva</button>
-      {error && <p style={{ color: 'red' }}>{error}</p>}
+
+      <div style={{ display: 'flex', gap: 12, justifyContent: 'center' }}>
+        {!recording ? (
+          <button onClick={startAnswering} disabled={loading} className="btn btn-primary" style={{ padding: '12px 28px' }}>
+            {loading ? 'Examiner is thinking…' : '🎙️ Start Answering'}
+          </button>
+        ) : (
+          <button onClick={stopAnswering} className="btn btn-danger" style={{ padding: '12px 28px' }}>⏹ Stop & Submit</button>
+        )}
+        <button onClick={endViva} disabled={loading} className="btn btn-outline" style={{ padding: '12px 28px' }}>End Viva</button>
+      </div>
     </div>
   );
 }
