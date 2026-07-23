@@ -5,15 +5,18 @@ const router = express.Router();
 const { protect } = require('../middlewares/auth');
 const {
   sendOtp, verifyOtp, register, login, googleLogin,
-  getMe, updateMe, changePassword,
+  getMe, updateMe, changePassword,logout
 } = require('../controllers/authController');
 
-router.post('/sendotp', sendOtp);
-router.post('/verifyotp', verifyOtp);
-router.post('/register', register);
-router.post('/login', login);
-router.post('/google', googleLogin);
-
+// backend/routes/authRoutes.js — add
+const validate = require('../middlewares/validate');
+const { loginSchema, registerSchema, sendOtpSchema, verifyOtpSchema, googleLoginSchema, changePasswordSchema } = require('../validators/auth.schema');
+router.post('/sendotp', validate(sendOtpSchema), sendOtp);
+router.post('/verifyotp', validate(verifyOtpSchema), verifyOtp);
+router.post('/register', validate(registerSchema), register);
+router.post('/login', validate(loginSchema), login);
+router.post('/google', validate(googleLoginSchema), googleLogin);
+router.post('/logout', protect, logout);
 // Passport Google OAuth (redirect flow)
 router.get('/google/oauth', passport.authenticate('google', { scope: ['profile', 'email'] }));
 router.get('/google/callback',
@@ -42,6 +45,6 @@ router.get('/github/callback',
 
 router.get('/me', protect, getMe);
 router.patch('/updateme', protect, updateMe);
-router.patch('/changepassword', protect, changePassword);
+router.patch('/changepassword', protect, validate(changePasswordSchema), changePassword);
 
 module.exports = router;

@@ -21,10 +21,15 @@ import GithubIntelligence from './pages/GithubIntelligence';
 import ExtemporeCoach from './pages/ExtemporeCoach';
 import GDSimulator from './pages/GDSimulator';
 import VivaSimulator from './pages/VivaSimulator';
+import ResumeHistory from './pages/ResumeHistory';
 
 import CreateProject from './components/CreateProject';
 import EditProject from './components/EditProject';
 import AdminPanel from './components/AdminPanel';
+import ResumeHistoryDetail from './pages/ResumeHistoryDetail';
+import GDHistory from './pages/GDHistory';
+import VivaHistory from './pages/VivaHistory';
+import ExtemporeHistory from './pages/ExtemporeHistory';
 
 import './index.css';
 
@@ -51,11 +56,17 @@ function AppContent() {
           <Route path="/chat/:projectId/:userId" element={<Chat />} />
           <Route path="/roadmap" element={<Roadmap />} />
           <Route path="/resume" element={<ResumeScan />} />
+          <Route path="/resume/history" element={<ResumeHistory />} />
+          <Route path="/resume/history/:id" element={<ResumeHistoryDetail />} />
           <Route path="/interview" element={<MockInterview />} />
           <Route path="/github-intelligence" element={<GithubIntelligence />} />
           <Route path="/extempore-coach" element={<ExtemporeCoach />} />
           <Route path="/gd-simulator" element={<GDSimulator />} />
           <Route path="/viva-simulator" element={<VivaSimulator />} />
+
+<Route path="/gd-simulator/history" element={<GDHistory />} />
+<Route path="/viva-simulator/history" element={<VivaHistory />} />
+<Route path="/extempore-coach/history" element={<ExtemporeHistory />} />
         </Route>
 
         {/* Admin */}

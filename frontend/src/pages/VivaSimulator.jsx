@@ -1,7 +1,7 @@
 import { useState, useRef } from 'react';
 import axios from '../api/axios';
 import LoadingSpinner from '../components/LoadingSpinner';
-
+import { Link } from 'react-router-dom';
 export default function VivaSimulator() {
   const [file, setFile] = useState(null);
   const [reportTitle, setReportTitle] = useState('');
@@ -93,7 +93,7 @@ export default function VivaSimulator() {
   };
 
   const depthColor = { vague: { bg: '#fee2e2', c: '#991b1b' }, adequate: { bg: '#fef3c7', c: '#92400e' }, strong: { bg: '#d1fae5', c: '#065f46' } };
-
+ 
   if (report) {
     return (
       <div className="page-container" style={{ maxWidth: 820 }}>
@@ -151,6 +151,9 @@ export default function VivaSimulator() {
           <div style={{ width: 52, height: 52, borderRadius: 14, background: 'var(--brand)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: 24, marginBottom: 16 }}>🎓</div>
           <h1 style={{ fontWeight: 800, fontSize: '1.6rem', letterSpacing: -0.5 }}>Viva Simulator</h1>
           <p style={{ color: 'var(--muted)', fontSize: '0.9rem', marginTop: 6 }}>Upload your report and face adaptive oral-defense questioning.</p>
+          <Link to="/viva-simulator/history" style={{ fontSize: '0.8rem', color: 'var(--brand)', marginTop: 8, display: 'inline-block' }}>View past viva →</Link>
+
+
         </div>
 
         {error && <div className="error-msg" style={{ marginBottom: 16 }}>{error}</div>}
@@ -205,7 +208,6 @@ export default function VivaSimulator() {
   return (
     <div className="page-container" style={{ maxWidth: 820 }}>
       <LoadingSpinner show={loading} />
-
       <div className="card" style={{ padding: 24, marginBottom: 20, background: 'var(--brand-light)', borderColor: 'var(--brand)' }}>
         <div style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--brand)', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 8 }}>Examiner asks</div>
         <p style={{ fontSize: '1rem', fontWeight: 600, color: 'var(--text)', lineHeight: 1.6 }}>{question}</p>

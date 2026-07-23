@@ -15,7 +15,9 @@ const roadmapSchema = new mongoose.Schema({
     resources: [{ title: String, url: String, type: { type: String, enum: ['video', 'article', 'course', 'book', 'other'] } }],
     completed: { type: Boolean, default: false },
   }],
-
+   title: { type: String, default: 'Generating your roadmap...' }, // was required — must allow a placeholder since title doesn't exist until the AI job finishes
+status: { type: String, enum: ['pending', 'processing', 'completed', 'failed'], default: 'pending' },
+errorMessage: { type: String },
   isAIGenerated: { type: Boolean, default: true },
   createdAt: { type: Date, default: Date.now },
   updatedAt: { type: Date, default: Date.now },

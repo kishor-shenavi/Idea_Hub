@@ -1,7 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect,useRef } from 'react';
 import axios from '../api/axios';
 import { useAuth } from '../context/AuthContext';
-
+import { useSocket } from '../context/SocketContext';
 export default function Roadmap() {
   const { user } = useAuth();
   const [roadmaps, setRoadmaps] = useState([]);
@@ -15,6 +15,38 @@ export default function Roadmap() {
   const [quizLoading, setQuizLoading] = useState(false);
   const [selectedAnswer, setSelectedAnswer] = useState({});
 
+ 
+
+   
+  const socket = useSocket();
+const [activeRoadmapId, setActiveRoadmapId] = useState(null);
+
+useEffect(() => {
+  if (!socket || !activeRoadmapId) return;
+  const handleRoadmapReady = async (payload) => {
+      console.log('🟢 roadmapReady event received:', payload); // add this line first
+
+    if (payload.roadmapId !== activeRoadmapId) return;
+    clearInterval(pollRef.current);
+    try {
+      const { data } = await axios.get(`/api/v1/roadmap/${activeRoadmapId}`);
+      setRoadmaps(p => p.map(r => r._id === activeRoadmapId ? data.data : r));
+    } finally {
+      setActiveRoadmapId(null);
+    }
+  };
+  socket.on('roadmapReady', handleRoadmapReady);
+  return () => socket.off('roadmapReady', handleRoadmapReady);
+}, [socket, activeRoadmapId]);
+   
+
+
+
+
+
+const pollRef = useRef(null);
+useEffect(() => () => clearInterval(pollRef.current), []);
+   
   useEffect(() => {
     const load = async () => {
       try {
@@ -26,21 +58,42 @@ export default function Roadmap() {
     load();
   }, []);
 
-  const generate = async (e) => {
-    e.preventDefault();
-    setGenerating(true);
+const generate = async (e) => {
+  e.preventDefault();
+  setGenerating(true);
+  try {
+    const { data } = await axios.post('/api/v1/roadmap/generate', {
+      year: form.year,
+      branch: form.branch,
+      goalType: form.goalType,
+      interests: form.interests.split(',').map(s => s.trim()).filter(Boolean),
+    });
+    setRoadmaps(p => [data.data, ...p]); // shows immediately with "Generating..." placeholder title/empty weeks
+    setGenerating(false);
+    setView('list'); // NOTE: intentionally NOT 'detail' — no weeks exist yet, nothing to show there
+    setActiveRoadmapId(data.data._id);
+    pollForCompletion(data.data._id);
+  } catch {
+    setGenerating(false);
+  }
+};
+
+const pollForCompletion = (roadmapId) => {
+  let attempts = 0;
+  pollRef.current = setInterval(async () => {
+    attempts++;
     try {
-      const { data } = await axios.post('/api/v1/roadmap/generate', {
-        year: form.year,
-        branch: form.branch,
-        goalType: form.goalType,
-        interests: form.interests.split(',').map(s => s.trim()).filter(Boolean),
-      });
-      setRoadmaps(p => [data.data, ...p]);
-      setActiveRoadmap(data.data);
-      setView('detail');
-    } catch { } finally { setGenerating(false); }
-  };
+      const { data } = await axios.get(`/api/v1/roadmap/${roadmapId}`);
+      if (data.data.status === 'completed' || data.data.status === 'failed' || attempts >= 30) {
+        clearInterval(pollRef.current);
+        setActiveRoadmapId(null);
+        setRoadmaps(p => p.map(r => r._id === roadmapId ? data.data : r));
+      }
+    } catch {
+      clearInterval(pollRef.current);
+    }
+  }, 2000);
+};
 
   const toggleWeek = async (roadmapId, weekNumber) => {
     try {
@@ -206,9 +259,41 @@ export default function Roadmap() {
                 <div key={r._id} className="card" style={{ padding: 20, cursor: 'pointer', transition: 'transform 0.2s, box-shadow 0.2s' }}
                   onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = 'var(--shadow-lg)'; }}
                   onMouseLeave={e => { e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = 'var(--shadow)'; }}
-                  onClick={() => { setActiveRoadmap(r); setView('detail'); }}
+                  onClick={() => {
+  if (r.status !== 'completed') return;
+  setActiveRoadmap(r);
+  setView('detail');
+}}
                 >
-                  <h3 style={{ fontWeight: 700, fontSize: '0.95rem', marginBottom: 6 }}>{r.title}</h3>
+                  <h3 style={{ fontWeight: 700, fontSize: '0.95rem', marginBottom: 6 }}>
+  {r.title}
+</h3>
+
+{r.status === 'pending' || r.status === 'processing' ? (
+  <span
+    className="tag"
+    style={{
+      background: '#dbeafe',
+      color: '#1e40af',
+      marginBottom: 8,
+      display: 'inline-block'
+    }}
+  >
+    ⏳ Generating…
+  </span>
+) : r.status === 'failed' ? (
+  <span
+    className="tag"
+    style={{
+      background: '#fee2e2',
+      color: '#991b1b',
+      marginBottom: 8,
+      display: 'inline-block'
+    }}
+  >
+    Failed
+  </span>
+) : null}
                   <div style={{ display: 'flex', gap: 8, marginBottom: 12, flexWrap: 'wrap' }}>
                     <span className="tag">Year {r.year}</span>
                     <span className="tag">{r.goalType}</span>

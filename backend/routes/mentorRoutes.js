@@ -10,8 +10,11 @@ router.use(protect);
 
 router.post('/request', sendRequest);
 router.get('/requests/received', getReceivedRequests);
-router.get('/requests/sent', getSentRequests);
-router.put('/requests/:id/respond', respondToRequest);
+// backend/routes/mentorRoutes.js — add
+const validate = require('../middlewares/validate');
+const { sendRequestSchema, respondSchema } = require('../validators/mentor.schema');
+router.post('/request', validate(sendRequestSchema), sendRequest);
+router.put('/requests/:id/respond', validate(respondSchema), respondToRequest);
 router.delete('/requests/:id', cancelRequest);
 
 module.exports = router;

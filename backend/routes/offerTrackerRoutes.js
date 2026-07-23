@@ -9,7 +9,10 @@ router.get('/', getOffers);
 router.get('/stats', getOfferStats);
 
 router.use(protect);
-router.post('/', createOffer);
+// backend/routes/offerTrackerRoutes.js — add
+const validate = require('../middlewares/validate');
+const { offerSchema } = require('../validators/offerTracker.schema');
+router.post('/', validate(offerSchema), createOffer);
 router.delete('/:id', deleteOffer);
 
 module.exports = router;

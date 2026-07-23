@@ -21,6 +21,9 @@ const resumeScanSchema = new mongoose.Schema({
     },
     overallFeedback: String,
   },
+  resumeText: { type: String }, // worker needs the raw text to run the AI call, so it must be persisted, not just passed in-request
+status: { type: String, enum: ['pending', 'processing', 'completed', 'failed'], default: 'pending' },
+errorMessage: { type: String },
 
   createdAt: { type: Date, default: Date.now },
 });

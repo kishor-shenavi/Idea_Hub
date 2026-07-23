@@ -3,7 +3,7 @@ import axios from '../api/axios';
 import { analyzeAudioBlob } from '../utils/audioAnalysis';
 import SpeechTimeline from '../components/SpeechTimeline';
 import LoadingSpinner from '../components/LoadingSpinner';
-
+import { Link } from 'react-router-dom';
 const TOPICS = [
   'Should college students take a gap year?',
   'Is remote work better than office work?',
@@ -70,7 +70,7 @@ export default function ExtemporeCoach() {
   return (
     <div className="page-container" style={{ maxWidth: 820 }}>
       <LoadingSpinner show={loading} />
-
+       <Link to="/extempore-coach/history" style={{ fontSize: '0.8rem', color: 'var(--brand)', marginTop: 8, display: 'inline-block' }}>View history →</Link>
       <div style={{ textAlign: 'center', marginBottom: 32 }}>
         <div style={{ width: 52, height: 52, borderRadius: 14, background: 'var(--brand)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: 24, marginBottom: 16 }}>🗣️</div>
         <h1 style={{ fontWeight: 800, fontSize: '1.6rem', letterSpacing: -0.5 }}>Public Speaking Coach</h1>

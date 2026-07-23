@@ -11,7 +11,10 @@ router.get('/:id', getBuildLog);
 
 router.use(protect);
 router.get('/user/my', getMyBuildLogs);
-router.post('/', createBuildLog);
+// backend/routes/buildLogRoutes.js — add
+const validate = require('../middlewares/validate');
+const { buildLogSchema } = require('../validators/buildLog.schema');
+router.post('/', validate(buildLogSchema), createBuildLog);
 router.put('/:id', updateBuildLog);
 router.delete('/:id', deleteBuildLog);
 router.put('/:id/like', likeBuildLog);

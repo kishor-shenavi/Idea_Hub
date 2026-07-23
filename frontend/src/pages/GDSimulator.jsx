@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import axios from '../api/axios';
 import LoadingSpinner from '../components/LoadingSpinner';
+import { Link } from 'react-router-dom';
 
 export default function GDSimulator() {
   const [topic, setTopic] = useState('');
@@ -179,7 +180,7 @@ export default function GDSimulator() {
     <div className="page-container" style={{ maxWidth: 820 }}>
       <LoadingSpinner show={busy} />
       <h2 style={{ fontWeight: 800, fontSize: '1.3rem', letterSpacing: -0.5, marginBottom: 20 }}>{session.topic}</h2>
-
+     <Link to="/gd-simulator/history" style={{ fontSize: '0.8rem', color: 'var(--brand)', marginTop: 8, display: 'inline-block' }}>View past discussions →</Link>
       <div style={{ display: 'flex', gap: 10, marginBottom: 20, flexWrap: 'wrap' }}>
         {personas.map(p => {
           const e = eagerness.find(x => x.personaId === p.id);

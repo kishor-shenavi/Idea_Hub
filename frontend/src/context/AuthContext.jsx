@@ -10,12 +10,17 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  const logout = useCallback(() => {
-    localStorage.removeItem('token');
-    setToken(null);
-    setUser(null);
-    navigate('/login');
-  }, [navigate]);
+ const logout = useCallback(async () => {
+  try {
+    await axios.post('/api/v1/auth/logout');
+  } catch (err) {
+    // even if the API call fails (e.g. network issue), still clear local state so the user isn't stuck
+  }
+  localStorage.removeItem('token');
+  setToken(null);
+  setUser(null);
+  navigate('/login');
+}, [navigate]);
 
   const fetchUser = useCallback(async () => {
     if (!token) return;

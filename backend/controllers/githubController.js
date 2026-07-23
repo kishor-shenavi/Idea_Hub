@@ -1,43 +1,43 @@
-const User = require('../models/User');
-const PortfolioScan = require('../models/PortfolioScan');
+const userRepository = require('../repositories/user.repository');
+const portfolioScanRepository = require('../repositories/portfolioScan.repository');
 const { getPortfolioData } = require('../services/github/githubApiService');
 const { analyzePortfolio } = require('../services/ai/githubIntelligenceService');
-const { ErrorResponse } = require('../utils/errorHandler');
+const AppError = require('../utils/AppError');
 const asyncHandler = require('../middlewares/async');
+const logger = require('../utils/logger');
+const aiQueue =require('../queues/aiQueue');
+
 
 exports.getConnectionStatus = asyncHandler(async (req, res) => {
-  const user = await User.findById(req.user.id);
+  const user = await userRepository.findById(req.user.id);
   res.status(200).json({ success: true, connected: !!user.githubId, username: user.githubUsername });
 });
 
 exports.analyzeGithubProfile = asyncHandler(async (req, res, next) => {
-  const user = await User.findById(req.user.id).select('+githubAccessToken');
-  if (!user.githubAccessToken) {
-    return next(new ErrorResponse('GitHub account not connected', 400));
-  }
+  const user = await userRepository.findById(req.user.id, { withGithubToken: true });
+  if (!user.githubAccessToken) return next(AppError.validation('GitHub account not connected'));
 
-  const { repos } = await getPortfolioData(user.githubAccessToken);
-  if (repos.length === 0) {
-    return next(new ErrorResponse('No public repositories found to analyze', 400));
-  }
-
-  const aiResult = await analyzePortfolio({ username: user.githubUsername, repos });
-
-  const scan = await PortfolioScan.create({
-    user: req.user.id,
-    healthScore: aiResult.healthScore,
-    scoreBreakdown: aiResult.scoreBreakdown,
-    recruiterPerception: aiResult.recruiterPerception,
-    rawStats: {
-      repoCount: repos.length,
-      reposAnalyzed: repos.map(r => r.name),
-    },
+  const scan = await portfolioScanRepository.create({
+    user: req.user.id, status: 'pending', rawStats: {},
   });
 
+  await aiQueue.add('github-analyze', { scanId: scan._id.toString(), userId: req.user.id });
+
+  logger.info('GitHub analysis queued', { requestId: req.id, userId: req.user.id, scanId: scan._id });
+
+  res.status(202).json({ success: true, data: { scanId: scan._id, status: 'pending' } });
+});
+
+exports.getScanById = asyncHandler(async (req, res, next) => {
+  const scan = await portfolioScanRepository.findByIdForUser
+    ? await portfolioScanRepository.findByIdForUser(req.params.id, req.user.id)
+    : null;
+  // NOTE: portfolioScan.repository.js doesn't have this method yet — added below, don't skip that part
+  if (!scan) return next(AppError.notFound('Scan not found'));
   res.status(200).json({ success: true, data: scan });
 });
 
 exports.getScanHistory = asyncHandler(async (req, res) => {
-  const scans = await PortfolioScan.find({ user: req.user.id }).sort('-createdAt');
+  const scans = await portfolioScanRepository.findByUser(req.user.id);
   res.status(200).json({ success: true, count: scans.length, data: scans });
 });

@@ -4,7 +4,8 @@ const path = require('path');
 const router = express.Router();
 const { protect } = require('../middlewares/auth');
 const { startSession, submitResponse, getHistory, getSession, transcribeCandidateAudio } = require('../controllers/interviewController');
-
+const validate = require('../middlewares/validate');
+const { startInterviewSchema, respondSchema } = require('../validators/interview.schema');
 const storage = multer.diskStorage({
   destination: (req, file, cb) => cb(null, '/tmp/uploads/'),
   filename: (req, file, cb) => {
@@ -30,8 +31,10 @@ const upload = multer({
 router.use(protect);
 
 router.post('/transcribe', upload.single('audio'), transcribeCandidateAudio);
-router.post('/start', upload.single('resume'), startSession);
-router.post('/:id/respond', submitResponse);
+// backend/routes/interviewRoutes.js
+const aiRateLimiter = require('../middlewares/aiRateLimiter');
+router.post('/start', aiRateLimiter, upload.single('resume'), validate(startInterviewSchema), startSession);
+router.post('/:id/respond', aiRateLimiter, validate(respondSchema), submitResponse);
 router.get('/history', getHistory);
 router.get('/:id', getSession);
 

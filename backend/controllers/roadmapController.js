@@ -1,122 +1,75 @@
-const Roadmap = require('../models/Roadmap');
+// backend/controllers/roadmapController.js
+const roadmapRepository = require('../repositories/roadmap.repository');
 const { generateRoadmap, suggestProjects, generateQuiz, generateTopicResources } = require('../services/ai/roadmapService');
 const { getMarketInsights } = require('../services/ai/marketService');
-const { ErrorResponse } = require('../utils/errorHandler');
+const AppError = require('../utils/AppError');
 const asyncHandler = require('../middlewares/async');
+const logger = require('../utils/logger');
+const aiQueue = require('../queues/aiQueue'); // add this import
 
-// POST /api/v1/roadmap/generate
-exports.generateUserRoadmap = asyncHandler(async (req, res, next) => {
+exports.generateUserRoadmap = asyncHandler(async (req, res) => {
   const { year, branch, goalType, interests } = req.body;
-
-  if (!year || !branch || !goalType) {
-    return next(new ErrorResponse('year, branch and goalType are required', 400));
-  }
-
-  const aiResult = await generateRoadmap({
-    year,
-    branch,
-    goalType,
-    interests: interests || [],
+  const roadmap = await roadmapRepository.create({
+    user: req.user.id, year, branch, goalType, interests: interests || [], weeks: [], status: 'pending',
   });
-
-  const roadmap = await Roadmap.create({
-    user: req.user.id,
-    title: aiResult.title,
-    year,
-    branch,
-    goalType,
-    interests: interests || [],
-    weeks: aiResult.weeks,
-    isAIGenerated: true,
-  });
-
-  res.status(201).json({ success: true, data: roadmap });
+  await aiQueue.add('roadmap-generate', { roadmapId: roadmap._id.toString() });
+  logger.info('Roadmap generation queued', { requestId: req.id, userId: req.user.id, roadmapId: roadmap._id });
+  res.status(202).json({ success: true, data: roadmap });
 });
 
-// GET /api/v1/roadmap/my
 exports.getMyRoadmaps = asyncHandler(async (req, res) => {
-  const roadmaps = await Roadmap.find({ user: req.user.id }).sort('-createdAt');
+  const roadmaps = await roadmapRepository.findByUser(req.user.id);
   res.status(200).json({ success: true, count: roadmaps.length, data: roadmaps });
 });
 
-// GET /api/v1/roadmap/:id
 exports.getRoadmap = asyncHandler(async (req, res, next) => {
-  const roadmap = await Roadmap.findById(req.params.id);
-  if (!roadmap) return next(new ErrorResponse('Roadmap not found', 404));
-
-  if (roadmap.user.toString() !== req.user.id && req.user.role !== 'admin') {
-    return next(new ErrorResponse('Not authorized', 403));
-  }
-
+  const roadmap = await roadmapRepository.findById(req.params.id);
+  if (!roadmap) return next(AppError.notFound('Roadmap not found'));
+  if (roadmap.user.toString() !== req.user.id && req.user.role !== 'admin') return next(AppError.forbidden());
   res.status(200).json({ success: true, data: roadmap });
 });
 
-// PUT /api/v1/roadmap/:id/week/:weekNumber/complete
 exports.markWeekComplete = asyncHandler(async (req, res, next) => {
-  const roadmap = await Roadmap.findById(req.params.id);
-  if (!roadmap) return next(new ErrorResponse('Roadmap not found', 404));
-  if (roadmap.user.toString() !== req.user.id) return next(new ErrorResponse('Not authorized', 403));
-
+  const roadmap = await roadmapRepository.findById(req.params.id);
+  if (!roadmap) return next(AppError.notFound('Roadmap not found'));
+  if (roadmap.user.toString() !== req.user.id) return next(AppError.forbidden());
   const weekNum = parseInt(req.params.weekNumber);
   const week = roadmap.weeks.find(w => w.week === weekNum);
-  if (!week) return next(new ErrorResponse('Week not found', 404));
-
+  if (!week) return next(AppError.notFound('Week not found'));
   week.completed = !week.completed;
   roadmap.updatedAt = Date.now();
   await roadmap.save();
-
   res.status(200).json({ success: true, data: roadmap });
 });
 
-// DELETE /api/v1/roadmap/:id
 exports.deleteRoadmap = asyncHandler(async (req, res, next) => {
-  const roadmap = await Roadmap.findById(req.params.id);
-  if (!roadmap) return next(new ErrorResponse('Roadmap not found', 404));
-  if (roadmap.user.toString() !== req.user.id) return next(new ErrorResponse('Not authorized', 403));
+  const roadmap = await roadmapRepository.findById(req.params.id);
+  if (!roadmap) return next(AppError.notFound('Roadmap not found'));
+  if (roadmap.user.toString() !== req.user.id) return next(AppError.forbidden());
   await roadmap.deleteOne();
   res.status(200).json({ success: true, data: {} });
 });
 
-// POST /api/v1/roadmap/suggest-projects
-exports.suggestProjectIdeas = asyncHandler(async (req, res, next) => {
+exports.suggestProjectIdeas = asyncHandler(async (req, res) => {
   const { year, branch, interests, difficulty } = req.body;
-  if (!year || !branch) return next(new ErrorResponse('year and branch are required', 400));
-
-  const result = await suggestProjects({
-    year,
-    branch,
-    interests: interests || [],
-    difficulty,
-  });
-
+  const result = await suggestProjects({ year, branch, interests: interests || [], difficulty });
   res.status(200).json({ success: true, data: result.projects });
 });
 
-// POST /api/v1/roadmap/quiz
-exports.generateTopicQuiz = asyncHandler(async (req, res, next) => {
+exports.generateTopicQuiz = asyncHandler(async (req, res) => {
   const { topic, difficulty, count } = req.body;
-  if (!topic) return next(new ErrorResponse('topic is required', 400));
-
   const result = await generateQuiz({ topic, difficulty, count: count || 5 });
   res.status(200).json({ success: true, data: result.quiz });
 });
 
-// POST /api/v1/roadmap/resources
-exports.getWeekResources = asyncHandler(async (req, res, next) => {
+exports.getWeekResources = asyncHandler(async (req, res) => {
   const { topic, context } = req.body;
-  if (!topic) return next(new ErrorResponse('topic is required', 400));
-
   const result = await generateTopicResources({ topic, context });
   res.status(200).json({ success: true, data: result });
 });
 
-// POST /api/v1/roadmap/market-insights
-exports.getMarketData = asyncHandler(async (req, res, next) => {
+exports.getMarketData = asyncHandler(async (req, res) => {
   const { branch, goalType, year } = req.body;
-  const result = await getMarketInsights({
-    branch: branch || req.user.branch,
-    goalType: goalType || req.user.goalType,
-    year: year || req.user.year,
-  });
+  const result = await getMarketInsights({ branch: branch || req.user.branch, goalType: goalType || req.user.goalType, year: year || req.user.year });
   res.status(200).json({ success: true, data: result });
 });

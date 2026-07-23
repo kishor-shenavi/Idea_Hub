@@ -22,6 +22,10 @@ const portfolioScanSchema = new mongoose.Schema({
     totalCommits: Number,
     reposAnalyzed: [String],
   },
+  status: { type: String, enum: ['pending', 'processing', 'completed', 'failed'], default: 'pending' },
+errorMessage: { type: String },
+// make these NOT required at creation time, since they don't exist until the job finishes:
+healthScore: { type: Number }, // remove `required: true` if it was set
   createdAt: { type: Date, default: Date.now },
 });
 

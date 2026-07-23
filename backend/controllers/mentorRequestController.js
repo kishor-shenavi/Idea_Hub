@@ -1,94 +1,47 @@
-const MentorRequest = require('../models/MentorRequest');
-const User = require('../models/User');
-const { ErrorResponse } = require('../utils/errorHandler');
+// backend/controllers/mentorRequestController.js
+const mentorRequestRepository = require('../repositories/mentorRequest.repository');
+const userRepository = require('../repositories/user.repository');
+const AppError = require('../utils/AppError');
 const asyncHandler = require('../middlewares/async');
 
-// POST /api/v1/mentor/request
 exports.sendRequest = asyncHandler(async (req, res, next) => {
   const { seniorId, projectId, message } = req.body;
-
-  if (seniorId === req.user.id) {
-    return next(new ErrorResponse('Cannot send request to yourself', 400));
-  }
-
-  const senior = await User.findById(seniorId);
-  if (!senior) return next(new ErrorResponse('Senior not found', 404));
-
-  // Prevent duplicate pending request
-  const existing = await MentorRequest.findOne({
-    student: req.user.id,
-    senior: seniorId,
-    status: 'pending',
-  });
-  if (existing) return next(new ErrorResponse('You already have a pending request to this senior', 400));
-
-  const request = await MentorRequest.create({
-    student: req.user.id,
-    senior: seniorId,
-    project: projectId || null,
-    message,
-  });
-
-  const populated = await MentorRequest.findById(request._id)
-    .populate('student', 'name avatar year branch')
-    .populate('senior', 'name avatar')
-    .populate('project', 'title');
-
+  if (seniorId === req.user.id) return next(AppError.validation('Cannot send request to yourself'));
+  const senior = await userRepository.findById(seniorId);
+  if (!senior) return next(AppError.notFound('Senior not found'));
+  const existing = await mentorRequestRepository.findPending(req.user.id, seniorId);
+  if (existing) return next(AppError.validation('You already have a pending request to this senior'));
+  const request = await mentorRequestRepository.create({ student: req.user.id, senior: seniorId, project: projectId || null, message });
+  const populated = await mentorRequestRepository.findByIdPopulated(request._id);
   res.status(201).json({ success: true, data: populated });
 });
 
-// GET /api/v1/mentor/requests/received  — for seniors
 exports.getReceivedRequests = asyncHandler(async (req, res) => {
-  const requests = await MentorRequest.find({ senior: req.user.id })
-    .populate('student', 'name avatar year branch bio')
-    .populate('project', 'title category')
-    .sort('-createdAt');
+  const requests = await mentorRequestRepository.findReceived(req.user.id);
   res.status(200).json({ success: true, count: requests.length, data: requests });
 });
 
-// GET /api/v1/mentor/requests/sent  — for students
 exports.getSentRequests = asyncHandler(async (req, res) => {
-  const requests = await MentorRequest.find({ student: req.user.id })
-    .populate('senior', 'name avatar branch currentRole company')
-    .populate('project', 'title')
-    .sort('-createdAt');
+  const requests = await mentorRequestRepository.findSent(req.user.id);
   res.status(200).json({ success: true, count: requests.length, data: requests });
 });
 
-// PUT /api/v1/mentor/requests/:id/respond
 exports.respondToRequest = asyncHandler(async (req, res, next) => {
   const { status, responseMessage } = req.body;
-
-  if (!['accepted', 'rejected'].includes(status)) {
-    return next(new ErrorResponse('Status must be accepted or rejected', 400));
-  }
-
-  const request = await MentorRequest.findById(req.params.id);
-  if (!request) return next(new ErrorResponse('Request not found', 404));
-
-  if (request.senior.toString() !== req.user.id) {
-    return next(new ErrorResponse('Not authorized', 403));
-  }
-
+  const request = await mentorRequestRepository.findById(req.params.id);
+  if (!request) return next(AppError.notFound('Request not found'));
+  if (request.senior.toString() !== req.user.id) return next(AppError.forbidden());
   request.status = status;
   request.responseMessage = responseMessage || '';
   await request.save();
-
   res.status(200).json({ success: true, data: request });
 });
 
-// DELETE /api/v1/mentor/requests/:id  — student cancels pending request
 exports.cancelRequest = asyncHandler(async (req, res, next) => {
-  const request = await MentorRequest.findById(req.params.id);
-  if (!request) return next(new ErrorResponse('Request not found', 404));
-
-  if (request.student.toString() !== req.user.id) {
-    return next(new ErrorResponse('Not authorized', 403));
-  }
-  if (request.status !== 'pending') {
-    return next(new ErrorResponse('Cannot cancel a request that has already been responded to', 400));
-  }
-
+  const request = await mentorRequestRepository.findById(req.params.id);
+  if (!request) return next(AppError.notFound('Request not found'));
+  if (request.student.toString() !== req.user.id) return next(AppError.forbidden());
+  if (request.status !== 'pending') return next(AppError.validation('Cannot cancel a request that has already been responded to'));
   await request.deleteOne();
   res.status(200).json({ success: true, data: {} });
 });

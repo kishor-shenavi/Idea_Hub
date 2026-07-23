@@ -1,11 +1,12 @@
 const fs = require('fs');
 const pdfParse = require('pdf-parse');
-const VivaSession = require('../models/VivaSession');
+const vivaSessionRepository = require('../repositories/vivaSession.repository');
 const { generateFirstQuestion, evaluateAndContinue } = require('../services/ai/vivaExaminerService');
 const { generateVivaReport } = require('../services/ai/vivaReportService');
 const { transcribeAudio } = require('../services/speech/transcriptionService');
 const asyncHandler = require('../middlewares/async');
-const { ErrorResponse } = require('../utils/errorHandler');
+const AppError = require('../utils/AppError');
+const logger = require('../utils/logger');
 
 exports.startViva = asyncHandler(async (req, res, next) => {
   let reportText = '';
@@ -15,47 +16,47 @@ exports.startViva = asyncHandler(async (req, res, next) => {
       const dataBuffer = fs.readFileSync(req.file.path);
       const pdfData = await pdfParse(dataBuffer);
       reportText = pdfData.text;
+      logger.info('PDF parsed for viva', { requestId: req.id, pages: pdfData.numpages, chars: reportText.trim().length });
       fs.unlinkSync(req.file.path);
     } catch (err) {
       if (req.file && fs.existsSync(req.file.path)) fs.unlinkSync(req.file.path);
-      return next(new ErrorResponse('Failed to parse PDF. Please try pasting the report text instead.', 400));
+      return next(AppError.validation('Failed to parse PDF. Please try pasting the report text instead.'));
     }
   } else if (req.body.reportText) {
     reportText = req.body.reportText;
   } else {
-    return next(new ErrorResponse('Please upload a PDF or paste report text', 400));
+    return next(AppError.validation('Please upload a PDF or paste report text'));
   }
 
   if (reportText.trim().length < 50) {
-    return next(new ErrorResponse('Report text is too short to conduct a viva on', 400));
+    return next(AppError.validation('Report text is too short to conduct a viva on'));
   }
 
   const { question } = await generateFirstQuestion(reportText);
 
-  const session = await VivaSession.create({
+  const session = await vivaSessionRepository.create({
     user: req.user.id,
     reportText,
     reportTitle: req.body.reportTitle || 'Untitled Project',
-    exchanges: [{ question, answer: '' }], // answer filled in when student responds
+    exchanges: [{ question, answer: '' }],
   });
 
   res.status(200).json({ success: true, data: { sessionId: session._id, question } });
 });
 
 exports.answerQuestion = asyncHandler(async (req, res, next) => {
-  const session = await VivaSession.findOne({ _id: req.params.id, user: req.user.id });
-  if (!session) return next(new ErrorResponse('Session not found', 404));
-  if (session.status === 'ended') return next(new ErrorResponse('Viva already ended', 400));
-  if (!req.file) return next(new ErrorResponse('No audio provided', 400));
+  const session = await vivaSessionRepository.findByIdForUser(req.params.id, req.user.id);
+  if (!session) return next(AppError.notFound('Session not found'));
+  if (session.status === 'ended') return next(AppError.validation('Viva already ended'));
+  if (!req.file) return next(AppError.validation('No audio provided'));
 
   const transcriptData = await transcribeAudio(req.file.path);
   fs.unlink(req.file.path, () => {});
 
   if (!transcriptData.text || transcriptData.text.trim().length === 0) {
-    return next(new ErrorResponse('No speech detected', 400));
+    return next(AppError.validation('No speech detected'));
   }
 
-  // fill in the answer to the current open question
   const current = session.exchanges[session.exchanges.length - 1];
   current.answer = transcriptData.text;
 
@@ -64,6 +65,8 @@ exports.answerQuestion = asyncHandler(async (req, res, next) => {
     exchanges: session.exchanges,
     latestAnswer: transcriptData.text,
   });
+
+  logger.info('Viva answer evaluated', { requestId: req.id, userId: req.user.id, sessionId: session._id, depth: result.rubric.depth, action: result.action });
 
   current.rubric = result.rubric;
   current.action = result.action;
@@ -78,11 +81,11 @@ exports.answerQuestion = asyncHandler(async (req, res, next) => {
 });
 
 exports.endViva = asyncHandler(async (req, res, next) => {
-  const session = await VivaSession.findOne({ _id: req.params.id, user: req.user.id });
-  if (!session) return next(new ErrorResponse('Session not found', 404));
+  const session = await vivaSessionRepository.findByIdForUser(req.params.id, req.user.id);
+  if (!session) return next(AppError.notFound('Session not found'));
 
   session.exchanges = session.exchanges.filter(e => e.answer && e.answer.trim().length > 0);
-  if (session.exchanges.length === 0) return next(new ErrorResponse('No answered questions to evaluate', 400));
+  if (session.exchanges.length === 0) return next(AppError.validation('No answered questions to evaluate'));
 
   const report = await generateVivaReport(session);
   session.status = 'ended';
@@ -93,8 +96,6 @@ exports.endViva = asyncHandler(async (req, res, next) => {
 });
 
 exports.getHistory = asyncHandler(async (req, res) => {
-  const sessions = await VivaSession.find({ user: req.user.id })
-    .select('reportTitle status report.overallScore createdAt')
-    .sort('-createdAt');
+  const sessions = await vivaSessionRepository.findByUser(req.user.id);
   res.status(200).json({ success: true, count: sessions.length, data: sessions });
 });

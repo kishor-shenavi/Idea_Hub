@@ -1,5 +1,5 @@
 require('dotenv').config();
-
+const config =require('./config');
 const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
@@ -22,21 +22,32 @@ connectDB();
 
 const app = express();
 
+const requestId = require('./middlewares/requestId');
+const requestLogger = require('./middlewares/requestLogger');
+
+app.use(requestId);
+app.use(requestLogger);
+
 // ── Security middleware ───────────────────────────────────────────────────────
 app.use(helmet());
 app.use(mongoSanitize());
 app.use(xss());
 app.use(hpp());
 
+app.use('/api/v1', require('./routes/healthRoute')); 
+
+
 // ── Rate limiting ─────────────────────────────────────────────────────────────
 const authLimiter = rateLimit({
-  windowMs: 10 * 60 * 1000, // 10 minutes
-  max: 20,
+  windowMs: 10 * 60 * 1000,
+  max: 50, // loosened — 20 was too tight given how often /auth/me gets called per session
+  skip: (req) => req.method === 'OPTIONS',
   message: { success: false, error: 'Too many requests, please try again later' },
 });
 const generalLimiter = rateLimit({
   windowMs: 10 * 60 * 1000,
   max: 500,
+  skip: (req) => req.method === 'OPTIONS',
 });
 app.use('/api/v1/auth', authLimiter);
 app.use('/api/v1', generalLimiter);
@@ -59,6 +70,8 @@ app.use(cookieParser());
 
 // ── Passport ──────────────────────────────────────────────────────────────────
 app.use(passport.initialize());
+
+
 
 // ── Routes ────────────────────────────────────────────────────────────────────
 app.use('/api/v1', require('./routes/index'));

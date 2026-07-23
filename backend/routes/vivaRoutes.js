@@ -3,7 +3,8 @@ const multer = require('multer');
 const router = express.Router();
 const { protect } = require('../middlewares/auth');
 const { startViva, answerQuestion, endViva, getHistory } = require('../controllers/vivaController');
-
+const validate = require('../middlewares/validate');
+const { startVivaSchema } = require('../validators/viva.schema');
 const reportUpload = multer({ dest: '/tmp/uploads/' }); // PDF, small files, memory-safe as-is
 const audioUpload = multer({
   storage: multer.diskStorage({
@@ -14,8 +15,10 @@ const audioUpload = multer({
 });
 
 router.use(protect);
-router.post('/start', reportUpload.single('report'), startViva);
-router.post('/:id/answer', audioUpload.single('audio'), answerQuestion);
+// backend/routes/vivaRoutes.js
+const aiRateLimiter = require('../middlewares/aiRateLimiter');
+router.post('/start', aiRateLimiter, reportUpload.single('report'), validate(startVivaSchema), startViva);
+router.post('/:id/answer', aiRateLimiter, audioUpload.single('audio'), answerQuestion);
 router.post('/:id/end', endViva);
 router.get('/history', getHistory);
 

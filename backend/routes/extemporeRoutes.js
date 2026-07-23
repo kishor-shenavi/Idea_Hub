@@ -4,7 +4,8 @@ const path = require('path');
 const router = express.Router();
 const { protect } = require('../middlewares/auth');
 const { analyzeSpeech, getSessionHistory } = require('../controllers/extemporeController');
-
+const validate = require('../middlewares/validate');
+const { analyzeSpeechSchema } = require('../validators/extempore.schema');
 const storage = multer.diskStorage({
   destination: (req, file, cb) => cb(null, '/tmp/uploads/'),
   filename: (req, file, cb) => cb(null, `speech-${Date.now()}.webm`),
@@ -16,7 +17,9 @@ const upload = multer({
 });
 
 router.use(protect);
-router.post('/analyze', upload.single('audio'), analyzeSpeech);
+// backend/routes/extemporeRoutes.js
+const aiRateLimiter = require('../middlewares/aiRateLimiter');
+router.post('/analyze', aiRateLimiter, upload.single('audio'), validate(analyzeSpeechSchema), analyzeSpeech);
 router.get('/history', getSessionHistory);
 
 module.exports = router;
