@@ -46,7 +46,7 @@ Return JSON:
   "nextQuestion": "..."
 }`;
 
-  return await generateAIJson(prompt, SYSTEM);
+  return await generateAIJson(prompt, SYSTEM, ['rubric', 'action', 'nextQuestion']);
 }
 
 module.exports = { generateFirstQuestion, evaluateAndContinue };

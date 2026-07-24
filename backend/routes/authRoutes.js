@@ -36,12 +36,19 @@ router.get('/github/oauth', (req, res, next) => {
   passport.authenticate('github', { scope: ['read:user', 'repo'], state: token })(req, res, next);
 });
 
-router.get('/github/callback',
-  passport.authenticate('github', { session: false }),
-  (req, res) => {
+router.get('/github/callback', (req, res, next) => {
+  passport.authenticate('github', { session: false }, (err, user) => {
+    if (err) {
+      const isDuplicateLink = err.message?.includes('already exists');
+      const reason = isDuplicateLink ? 'already_linked' : 'connection_failed';
+      return res.redirect(`${process.env.CLIENT_URL}/github-intelligence?error=${reason}`);
+    }
+    if (!user) {
+      return res.redirect(`${process.env.CLIENT_URL}/github-intelligence?error=connection_failed`);
+    }
     res.redirect(`${process.env.CLIENT_URL}/github-intelligence`);
-  }
-);
+  })(req, res, next);
+});
 
 router.get('/me', protect, getMe);
 router.patch('/updateme', protect, updateMe);

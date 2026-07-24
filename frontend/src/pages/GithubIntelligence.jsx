@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import axios from '../api/axios';
 import LoadingSpinner from '../components/LoadingSpinner';
 import { useSocket } from '../context/SocketContext';
-
+import { useSearchParams } from 'react-router-dom'; 
 export default function GithubIntelligence() {
   const [connected, setConnected] = useState(false);
   const [result, setResult] = useState(null);
@@ -12,7 +12,18 @@ export default function GithubIntelligence() {
   const [error, setError] = useState('');
   const pollRef = useRef(null);
  
-  
+  const [searchParams, setSearchParams] = useSearchParams();
+
+useEffect(() => {
+  const errorParam = searchParams.get('error');
+  if (errorParam === 'already_linked') {
+    setError('This GitHub account is already connected to a different IdeaHub account. Each GitHub account can only be linked to one profile.');
+    setSearchParams({}); // clear the query param so a refresh doesn't re-show the error
+  } else if (errorParam === 'connection_failed') {
+    setError('Could not connect your GitHub account. Please try again.');
+    setSearchParams({});
+  }
+}, []);
 
   const socket = useSocket();
 const [activeScanId, setActiveScanId] = useState(null);

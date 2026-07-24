@@ -51,7 +51,7 @@ Return JSON:
   ]
 }`;
 
-  return await generateAIJson(prompt, SYSTEM);
+  return await generateAIJson(prompt, SYSTEM, ['title', 'weeks']);
 }
 
 async function generateQuiz({ topic, difficulty, count = 5 }) {
