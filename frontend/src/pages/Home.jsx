@@ -13,6 +13,10 @@ const FEATURES = [
   { icon: '🎓', title: 'Viva Simulator', desc: 'Upload your project report and face adaptive oral-defense questioning.', to: '/viva-simulator' },
   { icon: '🏢', title: 'Internships', desc: 'Browse internship openings shared by students and seniors.', to: '/internships' },
   { icon: '😬', title: 'Regret Board', desc: 'Anonymous confessions from seniors — what they wish they did earlier.', to: '/regrets' },
+  { icon: '🏢', title: 'Company Wiki', desc: 'Real interview experiences and rounds shared by students and seniors.', to: '/wiki' },
+{ icon: '💰', title: 'Offer Tracker', desc: 'Anonymous, real placement and internship package data.', to: '/offers' },
+{ icon: '🛠️', title: 'Build in Public', desc: 'Weekly progress logs from students building real projects.', to: '/buildlogs' },
+{ icon: '🎯', title: 'Mentor Connect', desc: 'Get guidance directly from seniors who\'ve been through it.', to: '/mentor' },
 ];
 
 const YEAR_GUIDE = [
@@ -22,6 +26,7 @@ const YEAR_GUIDE = [
        { label: 'Viva simulator', to: '/viva-simulator' },
       { label: 'Learn from senior paths', to: '/paths' },
        { label: 'AI roadmap generator', to: '/roadmap' },
+       { label: 'Company Wiki', to: '/wiki' },
     ],
   },
   {
@@ -29,6 +34,7 @@ const YEAR_GUIDE = [
     items: [
        { label: 'Explore project ideas', to: '/projects' },
       { label: 'GitHub portfolio intelligence', to: '/github-intelligence' },
+      { label: 'Mentor Connect', to: '/mentor' },
     ],
   },
   {
@@ -37,6 +43,8 @@ const YEAR_GUIDE = [
       { label: 'Internship board', to: '/internships' },
       { label: 'ATS resume checker', to: '/resume' },
       { label: 'AI mock interview', to: '/interview' },
+     
+ { label: 'Build in Public', to: '/buildlogs' },
     ],
   },
   {
@@ -45,6 +53,8 @@ const YEAR_GUIDE = [
       { label: 'GD simulator', to: '/gd-simulator' },
       { label: 'Public speaking coach', to: '/extempore-coach' },
       { label: 'Regret board', to: '/regrets' },
+       { label: 'Offer Tracker', to: '/offers' },
+     
     ],
   },
 ];

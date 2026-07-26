@@ -3,7 +3,8 @@ const messageRepository = require('../repositories/message.repository');
 const projectRepository = require('../repositories/project.repository');
 const AppError = require('../utils/AppError');
 const asyncHandler = require('../middlewares/async');
-
+const Project = require('../models/Project'); // add import
+const Message = require('../models/Chat');
 exports.getProjectMessages = asyncHandler(async (req, res, next) => {
   const project = await projectRepository.findById(req.params.projectId);
   if (!project) return next(AppError.notFound('Project not found'));
@@ -13,6 +14,7 @@ exports.getProjectMessages = asyncHandler(async (req, res, next) => {
   res.status(200).json({ success: true, count: messages.length, data: messages });
 });
 
+
 exports.postProjectMessage = asyncHandler(async (req, res, next) => {
   const { content } = req.body;
   const project = await projectRepository.findById(req.params.projectId);
@@ -20,7 +22,22 @@ exports.postProjectMessage = asyncHandler(async (req, res, next) => {
   const message = await messageRepository.create({ project: req.params.projectId, sender: req.user.id, content });
   const populated = await messageRepository.findByIdPopulated(message._id);
   const io = req.app.get('io');
-  if (io) io.to(`project_${req.params.projectId}`).emit('newProjectMessage', populated);
+  if (io) {
+    io.to(`project_${req.params.projectId}`).emit('newProjectMessage', populated);
+
+    // notify prior participants + project creator, so they get a toast/dot even if not currently in the chat room
+    const priorSenderIds = await Message.distinct('sender', { project: req.params.projectId, sender: { $ne: req.user.id } });
+    const recipientIds = new Set(priorSenderIds.map(String));
+    if (project.createdBy.toString() !== req.user.id) recipientIds.add(project.createdBy.toString());
+    recipientIds.delete(req.user.id.toString());
+    recipientIds.forEach(uid => io.to(`user_${uid}`).emit('newProjectMessageNotification', {
+      projectId: req.params.projectId,
+      projectTitle: project.title,
+      creatorId: project.createdBy.toString(),
+      senderName: populated.sender.name,
+      preview: content.slice(0, 80),
+    }));
+  }
   res.status(201).json({ success: true, data: populated });
 });
 

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-
+import { useNotifications } from '../context/NotificationContext'; // add import
 const NAV_LINKS = [
   { to: '/projects', label: 'Projects' },
   { to: '/interview', label: 'Interview' },
@@ -17,7 +17,8 @@ export default function Navbar() {
   const location = useLocation();
 
   const isActive = (to) => location.pathname === to || location.pathname.startsWith(to + '/');
-
+  const [notifOpen, setNotifOpen] = useState(false);
+  const { items, remove } = useNotifications(); // replaces the old `const { totalBadge, recent, acknowledge } = useNotifications();`
   return (
     <nav style={{
       position: 'sticky', top: 0, zIndex: 100,
@@ -87,13 +88,38 @@ export default function Navbar() {
                 </div>
               )}
             </div>
-          ) : (
+          )
+           : (
             <>
               <Link to="/login" className="btn btn-ghost" style={{ fontSize: '0.85rem', padding: '8px 14px' }}>Sign in</Link>
               <Link to="/register" className="btn btn-primary" style={{ fontSize: '0.85rem', padding: '8px 14px' }}>Get started</Link>
             </>
           )}
-
+{user && (
+  <div style={{ position: 'relative' }}>
+    <button onClick={() => setNotifOpen(!notifOpen)} style={{ position: 'relative', background: 'none', border: 'none', cursor: 'pointer', padding: 6, display: 'flex' }}>
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--text)" strokeWidth="2"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
+      {totalBadge > 0 && (
+        <span style={{ position: 'absolute', top: 0, right: 0, background: 'var(--danger)', color: '#fff', fontSize: '0.65rem', fontWeight: 700, borderRadius: 99, minWidth: 16, height: 16, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0 3px' }}>
+          {totalBadge > 9 ? '9+' : totalBadge}
+        </span>
+      )}
+    </button>
+    {notifOpen && (
+      <div style={{ position: 'absolute', right: 0, top: 42, width: 300, maxHeight: 380, overflowY: 'auto', background: 'var(--surface)', border: '1.5px solid var(--border)', borderRadius: 12, boxShadow: 'var(--shadow-lg)', zIndex: 200 }} className="fade-in">
+        <div style={{ padding: '10px 14px', borderBottom: '1px solid var(--border)', fontWeight: 700, fontSize: '0.85rem' }}>Notifications</div>
+        {recent.length === 0 ? (
+          <div style={{ padding: 20, textAlign: 'center', color: 'var(--muted)', fontSize: '0.8rem' }}>Nothing yet.</div>
+        ) : recent.map(n => (
+          <Link key={n.id} to={n.to} onClick={() => { acknowledge(n.type); setNotifOpen(false); }} style={{ display: 'block', padding: '10px 14px', borderBottom: '1px solid var(--border)', textDecoration: 'none', color: 'inherit' }}>
+            <div style={{ fontWeight: 600, fontSize: '0.8rem' }}>{n.title}</div>
+            <div style={{ fontSize: '0.75rem', color: 'var(--muted)', marginTop: 2 }}>{n.body}</div>
+          </Link>
+        ))}
+      </div>
+    )}
+  </div>
+)}
           {/* Mobile menu toggle */}
           <button className="mobile-menu-btn" onClick={() => setMenuOpen(!menuOpen)} style={{ display: 'none', background: 'none', border: 'none', cursor: 'pointer', padding: 4 }}>
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--text)" strokeWidth="2">

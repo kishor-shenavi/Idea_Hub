@@ -18,5 +18,12 @@ class OfferTrackerRepository {
   }
   async create(data) { return OfferTracker.create(data); }
   async findById(id) { return OfferTracker.findById(id); }
+
+  async aggregateInternshipStats() {
+  return OfferTracker.aggregate([
+    { $match: { type: 'internship', stipend: { $exists: true, $ne: null } } },
+    { $group: { _id: null, avgStipend: { $avg: '$stipend' }, maxStipend: { $max: '$stipend' }, totalInternships: { $sum: 1 } } },
+  ]);
+}
 }
 module.exports = new OfferTrackerRepository();

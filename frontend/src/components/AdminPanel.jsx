@@ -16,6 +16,7 @@ export default function AdminPanel() {
   const [projects, setProjects] = useState([]);
   const [internships, setInternships] = useState([]);
   const [users, setUsers] = useState([]);
+  const [regrets, setRegrets] = useState([]);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -43,10 +44,16 @@ export default function AdminPanel() {
     try { const { data } = await axios.get('/api/v1/admin/users'); setUsers(data.data); } catch { } finally { setLoading(false); }
   };
 
+  const loadRegrets = async () => {
+    setLoading(true);
+    try { const { data } = await axios.get('/api/v1/regrets'); setRegrets(data.data); } catch { } finally { setLoading(false); }
+  };
+
   useEffect(() => {
     if (tab === 'projects') loadProjects();
     if (tab === 'internships') loadInternships();
     if (tab === 'users') loadUsers();
+    if (tab === 'regrets') loadRegrets();
   }, [tab]);
 
   const approveProject = async (id, status) => {
@@ -64,20 +71,26 @@ export default function AdminPanel() {
     setUsers(p => p.map(u => u._id === id ? { ...u, role } : u));
   };
 
+  const removeRegret = async (id) => {
+    if (!window.confirm('Remove this regret post? This cannot be undone.')) return;
+    await axios.delete(`/api/v1/admin/regrets/${id}`);
+    setRegrets(p => p.filter(r => r._id !== id));
+  };
+
   if (!user || user.role !== 'admin') return (
     <div className="page-container" style={{ textAlign: 'center', padding: 80 }}>
       <p style={{ color: 'var(--muted)' }}>You don't have permission to access this page.</p>
     </div>
   );
 
-  const TABS = ['stats', 'projects', 'internships', 'users'];
+  const TABS = ['stats', 'projects', 'internships', 'users', 'regrets'];
 
   return (
     <div className="page-container">
       <h1 style={{ fontWeight: 800, fontSize: '1.6rem', letterSpacing: -0.5, marginBottom: 24 }}>Admin panel</h1>
 
       {/* Tabs */}
-      <div style={{ display: 'flex', borderBottom: '1.5px solid var(--border)', marginBottom: 24 }}>
+      <div style={{ display: 'flex', borderBottom: '1.5px solid var(--border)', marginBottom: 24, flexWrap: 'wrap' }}>
         {TABS.map(t => (
           <button key={t} onClick={() => setTab(t)} style={{ padding: '10px 20px', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 600, fontSize: '0.875rem', fontFamily: 'var(--font)', color: tab === t ? 'var(--brand)' : 'var(--muted)', borderBottom: tab === t ? '2px solid var(--brand)' : '2px solid transparent', marginBottom: -1.5, textTransform: 'capitalize' }}>
             {t}
@@ -182,6 +195,29 @@ export default function AdminPanel() {
               ))}
             </tbody>
           </table>
+        </div>
+      )}
+
+      {/* Regrets — NEW */}
+      {tab === 'regrets' && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+          {loading ? <p style={{ color: 'var(--muted)' }}>Loading…</p>
+            : regrets.length === 0 ? <p style={{ color: 'var(--muted)' }}>No regret posts.</p>
+            : regrets.map(r => (
+              <div key={r._id} className="card" style={{ padding: 18 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 12 }}>
+                  <div style={{ flex: 1 }}>
+                    <p style={{ fontSize: '0.875rem', lineHeight: 1.6, marginBottom: 6 }}>{r.content}</p>
+                    <div style={{ fontSize: '0.75rem', color: 'var(--muted)' }}>
+                      {r.category && <span className="tag" style={{ marginRight: 6 }}>{r.category}</span>}
+                      ▲ {r.upvotes?.length || 0} · {new Date(r.createdAt).toLocaleDateString()}
+                    </div>
+                  </div>
+                  <button className="btn btn-danger" style={{ fontSize: '0.8rem', padding: '6px 12px', flexShrink: 0 }} onClick={() => removeRegret(r._id)}>Remove</button>
+                </div>
+              </div>
+            ))
+          }
         </div>
       )}
     </div>

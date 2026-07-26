@@ -30,13 +30,21 @@ import ResumeHistoryDetail from './pages/ResumeHistoryDetail';
 import GDHistory from './pages/GDHistory';
 import VivaHistory from './pages/VivaHistory';
 import ExtemporeHistory from './pages/ExtemporeHistory';
-
+import CompanyWiki from './pages/CompanyWiki';
+import OfferTracker from './pages/OfferTracker';
+import BuildLog from './pages/BuildLog';
+import MentorConnect from './pages/MentorConnect';
+import MentorChat from './pages/MentorChat';
+import { NotificationProvider } from './context/NotificationContext';
+import GlobalNotifications from './components/GlobalNotifications';
 import './index.css';
 
 function AppContent() {
   return (
     <>
+        <NotificationProvider>
       <Navbar />
+          <GlobalNotifications />
       <Routes>
         {/* Public — only Home, Login, Register, OTP verification */}
         <Route path="/" element={<Home />} />
@@ -67,6 +75,11 @@ function AppContent() {
 <Route path="/gd-simulator/history" element={<GDHistory />} />
 <Route path="/viva-simulator/history" element={<VivaHistory />} />
 <Route path="/extempore-coach/history" element={<ExtemporeHistory />} />
+<Route path="/wiki" element={<CompanyWiki />} />
+<Route path="/offers" element={<OfferTracker />} />
+<Route path="/buildlogs" element={<BuildLog />} />
+<Route path="/mentor" element={<MentorConnect />} />
+<Route path="/mentor/chat/:id" element={<MentorChat />} />
         </Route>
 
         {/* Admin */}
@@ -82,6 +95,7 @@ function AppContent() {
           </div>
         } />
       </Routes>
+      </NotificationProvider>
     </>
   );
 }

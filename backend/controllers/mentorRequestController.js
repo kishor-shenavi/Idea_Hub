@@ -3,6 +3,7 @@ const mentorRequestRepository = require('../repositories/mentorRequest.repositor
 const userRepository = require('../repositories/user.repository');
 const AppError = require('../utils/AppError');
 const asyncHandler = require('../middlewares/async');
+const directMessageRepository = require('../repositories/directMessage.repository'); // add import
 
 exports.sendRequest = asyncHandler(async (req, res, next) => {
   const { seniorId, projectId, message } = req.body;
@@ -13,6 +14,10 @@ exports.sendRequest = asyncHandler(async (req, res, next) => {
   if (existing) return next(AppError.validation('You already have a pending request to this senior'));
   const request = await mentorRequestRepository.create({ student: req.user.id, senior: seniorId, project: projectId || null, message });
   const populated = await mentorRequestRepository.findByIdPopulated(request._id);
+
+  const io = req.app.get('io');
+  if (io) io.to(`user_${seniorId}`).emit('newMentorRequest', populated); // real-time — senior's Received tab updates instantly
+
   res.status(201).json({ success: true, data: populated });
 });
 
@@ -34,7 +39,12 @@ exports.respondToRequest = asyncHandler(async (req, res, next) => {
   request.status = status;
   request.responseMessage = responseMessage || '';
   await request.save();
-  res.status(200).json({ success: true, data: request });
+  const populated = await mentorRequestRepository.findByIdPopulated(request._id);
+
+  const io = req.app.get('io');
+  if (io) io.to(`user_${request.student}`).emit('mentorRequestUpdate', populated); // real-time — student's Sent tab updates instantly
+
+  res.status(200).json({ success: true, data: populated });
 });
 
 exports.cancelRequest = asyncHandler(async (req, res, next) => {
@@ -44,4 +54,30 @@ exports.cancelRequest = asyncHandler(async (req, res, next) => {
   if (request.status !== 'pending') return next(AppError.validation('Cannot cancel a request that has already been responded to'));
   await request.deleteOne();
   res.status(200).json({ success: true, data: {} });
+});
+exports.browseSeniors = asyncHandler(async (req, res) => {
+  const seniors = await userRepository.findSeniors(req.query.search, req.user.id); // now excludes self
+  res.status(200).json({ success: true, count: seniors.length, data: seniors });
+});
+
+
+exports.getMentorMessages = asyncHandler(async (req, res, next) => {
+  const request = await mentorRequestRepository.findById(req.params.id);
+  if (!request) return next(AppError.notFound('Request not found'));
+  const isParticipant = [request.student.toString(), request.senior.toString()].includes(req.user.id);
+  if (!isParticipant) return next(AppError.forbidden());
+  if (request.status !== 'accepted') return next(AppError.validation('Chat is only available for accepted mentor requests'));
+
+  const messages = await directMessageRepository.findByRequest(req.params.id);
+  res.status(200).json({ success: true, count: messages.length, data: messages });
+});
+
+exports.getUnreadMentorChats = asyncHandler(async (req, res) => {
+  const ids = await directMessageRepository.unreadRequestIds(req.user.id);
+  res.status(200).json({ success: true, data: ids });
+});
+
+exports.markMentorChatRead = asyncHandler(async (req, res) => {
+  await directMessageRepository.markRead(req.params.id, req.user.id);
+  res.status(200).json({ success: true });
 });

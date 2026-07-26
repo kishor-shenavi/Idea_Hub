@@ -4,7 +4,7 @@ import axios from '../api/axios';
 import ProjectCard from '../components/ProjectCard';
 import { useAuth } from '../context/AuthContext';
 import LoadingSpinner from '../components/LoadingSpinner';
-
+import { useSocket } from '../context/SocketContext'; // add
 const CATEGORIES = ['web', 'mobile', 'desktop', 'ai', 'iot', 'other'];
 const DIFFICULTIES = ['beginner', 'intermediate', 'advanced'];
 
@@ -26,6 +26,26 @@ export default function Projects() {
   const [selectedProject, setSelectedProject] = useState(null);
   const observerRef = useRef();
   const lastCardRef = useRef();
+
+
+  const socket = useSocket();
+const [unreadProjectIds, setUnreadProjectIds] = useState(new Set());
+
+useEffect(() => {
+  if (!user) return;
+  axios.get('/api/v1/chat/unread').then(res => {
+    setUnreadProjectIds(new Set(Object.keys(res.data.data)));
+  });
+}, [user]);
+
+useEffect(() => {
+  if (!socket) return;
+  const handleNotif = (payload) => {
+    setUnreadProjectIds(prev => new Set(prev).add(payload.projectId));
+  };
+  socket.on('newProjectMessageNotification', handleNotif);
+  return () => socket.off('newProjectMessageNotification', handleNotif);
+}, [socket]);
 
   useEffect(() => {
     if (location.state?.showMineOnly) setTab('my');
@@ -157,13 +177,14 @@ export default function Projects() {
               const isLast = i === displayed.length - 1 && tab === 'all';
               return (
                 <div key={p._id} ref={isLast ? lastCardRef : null}>
-                  <ProjectCard
-                    project={p}
-                    onLike={handleLike}
-                    onDelete={handleDelete}
-                    isMyProject={tab === 'my'}
-                    onClick={() => setSelectedProject(prev => prev?._id === p._id ? null : p)}
-                  />
+              <ProjectCard
+  project={p}
+  onLike={handleLike}
+  onDelete={handleDelete}
+  isMyProject={tab === 'my'}
+  onClick={() => setSelectedProject(prev => prev?._id === p._id ? null : p)}
+  hasUnread={unreadProjectIds.has(p._id)}
+/>
                 </div>
               );
             })}

@@ -18,7 +18,7 @@ const CAT_STYLE = {
   other: { background: '#f1f0fb', color: '#6b6890' },
 };
 
-export default function ProjectCard({ project, onDelete, onLike, isMyProject, onClick }) {
+export default function ProjectCard({ project, onDelete, onLike, isMyProject, onClick,hasUnread }) {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [isLiked, setIsLiked] = useState(user ? project.likes?.includes(user.id) : false);
@@ -113,11 +113,12 @@ export default function ProjectCard({ project, onDelete, onLike, isMyProject, on
           <button onClick={handleShare} style={{ ...iconAction, color: 'var(--muted)' }} title="Share">
             <ShareIcon />
           </button>
-          {user && !isOwner && (
-            <button onClick={(e) => { e.stopPropagation(); navigate(`/chat/${project._id}/${typeof project.createdBy === 'object' ? project.createdBy._id : project.createdBy}`); }} style={{ ...iconAction, color: 'var(--success)' }} title="Chat">
-              <ChatIcon />
-            </button>
-          )}
+           {user && !isOwner && (
+    <button onClick={(e) => { e.stopPropagation(); navigate(`/chat/${project._id}/${typeof project.createdBy === 'object' ? project.createdBy._id : project.createdBy}`); }} style={{ ...iconAction, color: 'var(--success)', position: 'relative' }} title="Chat">
+      <ChatIcon />
+      {hasUnread && <span style={{ position: 'absolute', top: -2, right: -2, width: 8, height: 8, borderRadius: '50%', background: '#22c55e', border: '1.5px solid var(--surface)' }} />}
+    </button>
+  )}
         </div>
       </div>
     </div>

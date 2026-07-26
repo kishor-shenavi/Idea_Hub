@@ -34,3 +34,13 @@ exports.deleteOffer = asyncHandler(async (req, res, next) => {
   await offer.deleteOne();
   res.status(200).json({ success: true, data: {} });
 });
+
+exports.getOfferStats = asyncHandler(async (req, res) => {
+  const stats = await offerTrackerRepository.aggregateByCompany();
+  const overall = await offerTrackerRepository.aggregateOverall();
+  const internshipStats = await offerTrackerRepository.aggregateInternshipStats();
+  res.status(200).json({
+    success: true,
+    data: { byCompany: stats, overall: overall[0] || {}, internships: internshipStats[0] || {} },
+  });
+});

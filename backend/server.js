@@ -9,8 +9,11 @@ const IORedis = require('ioredis');
 const mongoose = require('mongoose');
 const redis = require('./config/redis');
 const queueConnection = require('./config/queueConnection');
-
+const MentorRequest = require('./models/MentorRequest'); // add at top, alongside `const Message = require('./models/Chat');`
+const DirectMessage = require('./models/DirectMessage'); // add
 const PORT = process.env.PORT || 5000;
+const Project = require('./models/Project'); // add near top, alongside `const Message = require('./models/Chat');`
+
 
 const server = http.createServer(app);
 
@@ -67,29 +70,83 @@ io.on('connection', (socket) => {
   });
 
   // Send message via socket (primary path)
-  socket.on('sendProjectMessage', async (data, callback) => {
-    try {
-      const { projectId, content } = data;
-      if (!projectId || !content) throw new Error('projectId and content are required');
+socket.on('sendProjectMessage', async (data, callback) => {
+  try {
+    const { projectId, content } = data;
+    if (!projectId || !content) throw new Error('projectId and content are required');
 
-      const message = await Message.create({
-        project: projectId,
-        sender: socket.user.id,
-        content,
-      });
+    const message = await Message.create({ project: projectId, sender: socket.user.id, content });
+    const populated = await Message.findById(message._id).populate('sender', 'name avatar year branch');
 
-      const populated = await Message.findById(message._id)
-        .populate('sender', 'name avatar year branch');
+    io.to(`project_${projectId}`).emit('newProjectMessage', populated);
 
-      // Broadcast to everyone in the project room
-      io.to(`project_${projectId}`).emit('newProjectMessage', populated);
-
-      if (typeof callback === 'function') callback({ status: 'success', data: populated });
-    } catch (err) {
-      console.error('❌ sendProjectMessage error:', err.message);
-      if (typeof callback === 'function') callback({ status: 'error', error: err.message });
+    // NEW — participant notification, same logic as the REST path in chatController
+    const project = await Project.findById(projectId).select('createdBy title');
+    if (project) {
+      const priorSenderIds = await Message.distinct('sender', { project: projectId, sender: { $ne: socket.user.id } });
+      const recipientIds = new Set(priorSenderIds.map(String));
+      if (project.createdBy.toString() !== socket.user.id) recipientIds.add(project.createdBy.toString());
+      recipientIds.delete(socket.user.id.toString());
+      recipientIds.forEach(uid => io.to(`user_${uid}`).emit('newProjectMessageNotification', {
+        projectId, projectTitle: project.title, creatorId: project.createdBy.toString(),
+        senderName: populated.sender.name, preview: content.slice(0, 80),
+      }));
     }
-  });
+
+    if (typeof callback === 'function') callback({ status: 'success', data: populated });
+  } catch (err) {
+    console.error('❌ sendProjectMessage error:', err.message);
+    if (typeof callback === 'function') callback({ status: 'error', error: err.message });
+  }
+});
+
+socket.on('joinMentorChat', async (requestId) => {
+  try {
+    const mr = await MentorRequest.findById(requestId);
+    if (!mr || mr.status !== 'accepted') return;
+    const isParticipant = [mr.student.toString(), mr.senior.toString()].includes(socket.user.id);
+    if (!isParticipant) return;
+    socket.join(`mentor_${requestId}`);
+  } catch (err) {
+    console.error('❌ joinMentorChat error:', err.message);
+  }
+});
+
+socket.on('leaveMentorChat', (requestId) => {
+  if (!requestId) return;
+  socket.leave(`mentor_${requestId}`);
+});
+
+socket.on('sendMentorMessage', async (data, callback) => {
+  try {
+    const { requestId, content } = data;
+    if (!requestId || !content) throw new Error('requestId and content are required');
+
+    const mr = await MentorRequest.findById(requestId);
+    if (!mr || mr.status !== 'accepted') throw new Error('Chat is not available for this request');
+    const isParticipant = [mr.student.toString(), mr.senior.toString()].includes(socket.user.id);
+    if (!isParticipant) throw new Error('Not authorized');
+
+    const message = await DirectMessage.create({ mentorRequest: requestId, sender: socket.user.id, content });
+    const populated = await DirectMessage.findById(message._id).populate('sender', 'name avatar');
+
+    io.to(`mentor_${requestId}`).emit('newMentorMessage', populated);
+
+    // lightweight notification to the OTHER participant, even if they're not currently in the chat room —
+    // this is what powers the green dot on the Mentor Connect list page
+    const otherUserId = mr.student.toString() === socket.user.id ? mr.senior.toString() : mr.student.toString();
+    io.to(`user_${otherUserId}`).emit('mentorMessageNotification', {
+  requestId,
+  senderName: populated.sender.name,
+  preview: content.slice(0, 80),
+});
+
+    if (typeof callback === 'function') callback({ status: 'success', data: populated });
+  } catch (err) {
+    console.error('❌ sendMentorMessage error:', err.message);
+    if (typeof callback === 'function') callback({ status: 'error', error: err.message });
+  }
+});
 
   // Typing indicators
   socket.on('typing', ({ projectId }) => {
