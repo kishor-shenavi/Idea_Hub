@@ -87,10 +87,11 @@ socket.on('sendProjectMessage', async (data, callback) => {
       const recipientIds = new Set(priorSenderIds.map(String));
       if (project.createdBy.toString() !== socket.user.id) recipientIds.add(project.createdBy.toString());
       recipientIds.delete(socket.user.id.toString());
-      recipientIds.forEach(uid => io.to(`user_${uid}`).emit('newProjectMessageNotification', {
-        projectId, projectTitle: project.title, creatorId: project.createdBy.toString(),
-        senderName: populated.sender.name, preview: content.slice(0, 80),
-      }));
+     recipientIds.forEach(uid => io.to(`user_${uid}`).emit('newProjectMessageNotification', {
+  projectId, projectTitle: project.title, creatorId: project.createdBy.toString(),
+  senderId: socket.user.id, // add this
+  senderName: populated.sender.name, preview: content.slice(0, 80),
+}));
     }
 
     if (typeof callback === 'function') callback({ status: 'success', data: populated });

@@ -30,13 +30,14 @@ exports.postProjectMessage = asyncHandler(async (req, res, next) => {
     const recipientIds = new Set(priorSenderIds.map(String));
     if (project.createdBy.toString() !== req.user.id) recipientIds.add(project.createdBy.toString());
     recipientIds.delete(req.user.id.toString());
-    recipientIds.forEach(uid => io.to(`user_${uid}`).emit('newProjectMessageNotification', {
-      projectId: req.params.projectId,
-      projectTitle: project.title,
-      creatorId: project.createdBy.toString(),
-      senderName: populated.sender.name,
-      preview: content.slice(0, 80),
-    }));
+   recipientIds.forEach(uid => io.to(`user_${uid}`).emit('newProjectMessageNotification', {
+  projectId: req.params.projectId,
+  projectTitle: project.title,
+  creatorId: project.createdBy.toString(),
+  senderId: req.user.id, // add this
+  senderName: populated.sender.name,
+  preview: content.slice(0, 80),
+}));
   }
   res.status(201).json({ success: true, data: populated });
 });

@@ -16,8 +16,12 @@ export const NotificationProvider = ({ children }) => {
 
   useEffect(() => {
     if (!socket || !user) return;
+  
+  const onProjectMsg = (p) => {
+  const chatTarget = p.senderId === p.creatorId ? p.creatorId : (user.id === p.creatorId ? p.senderId : p.creatorId);
+  push({ type: 'project', title: `💬 ${p.projectTitle}`, body: `${p.senderName}: ${p.preview}`, to: `/chat/${p.projectId}/${chatTarget}` });
+};
 
-    const onProjectMsg = (p) => push({ type: 'project', title: `💬 ${p.projectTitle}`, body: `${p.senderName}: ${p.preview}`, to: `/chat/${p.projectId}/${p.creatorId}` });
     const onMentorMsg = (p) => push({ type: 'mentorChat', title: '💬 New message', body: `${p.senderName}: ${p.preview}`, to: `/mentor/chat/${p.requestId}` });
     const onNewRequest = (r) => push({ type: 'mentorRequest', title: '🎯 New mentorship request', body: `${r.student?.name} wants guidance from you`, to: '/mentor' });
     const onRequestUpdate = (r) => {

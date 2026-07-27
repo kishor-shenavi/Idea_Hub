@@ -19,25 +19,26 @@ export default function Chat() {
   const [typing, setTyping] = useState(false);
   const bottomRef = useRef(null);
   const typingTimer = useRef(null);
-
+const [loadError, setLoadError] = useState('');
   useEffect(() => {
     if (!isValidId(projectId)) return navigate('/projects');
-    const load = async () => {
-      try {
-        const [msgRes, projRes] = await Promise.all([
-          axios.get(`/api/v1/chat/${projectId}/messages`),
-          axios.get(`/api/v1/projects/${projectId}`),
-        ]);
-        setMessages(msgRes.data.data || []);
-        setProject(projRes.data.data);
-        // Mark as read
-        axios.put(`/api/v1/chat/${projectId}/messages/read`).catch(() => {});
-      } catch (err) {
-        console.error(err);
-      } finally {
-        setLoading(false);
-      }
-    };
+  const load = async () => {
+  setLoadError('');
+  try {
+    const [msgRes, projRes] = await Promise.all([
+      axios.get(`/api/v1/chat/${projectId}/messages`),
+      axios.get(`/api/v1/projects/${projectId}`),
+    ]);
+    setMessages(msgRes.data.data || []);
+    setProject(projRes.data.data);
+    axios.put(`/api/v1/chat/${projectId}/messages/read`).catch(() => {});
+  } catch (err) {
+    console.error(err);
+    setLoadError(err.response?.data?.error || 'Could not load this conversation. Please refresh.');
+  } finally {
+    setLoading(false);
+  }
+};
     load();
   }, [projectId, navigate]);
 
@@ -83,9 +84,9 @@ export default function Chat() {
     setInput('');
   };
 
-  const isOwner = (msg) => project?.createdBy?._id === (typeof msg.sender === 'object' ? msg.sender._id : msg.sender);
-  const isMine = (msg) => (typeof msg.sender === 'object' ? msg.sender._id : msg.sender) === user?._id;
-
+  
+const isOwner = (msg) => project?.createdBy?._id === (typeof msg.sender === 'object' ? msg.sender._id : msg.sender);
+const isMine = (msg) => (typeof msg.sender === 'object' ? msg.sender._id : msg.sender) === user?.id;
   if (loading) return (
     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 'calc(100vh - var(--nav-h))', color: 'var(--muted)' }}>Loading chat…</div>
   );
@@ -127,6 +128,11 @@ export default function Chat() {
                     </span>
                   )}
                 </div>
+                {loadError && (
+  <div style={{ padding: '12px 20px', background: '#fee2e2', color: '#991b1b', fontSize: '0.85rem', textAlign: 'center' }}>
+    {loadError}
+  </div>
+)}
                 <div style={{
                   padding: '10px 14px', borderRadius: mine ? '14px 14px 4px 14px' : '14px 14px 14px 4px',
                   background: mine ? 'var(--brand)' : 'var(--surface)',
