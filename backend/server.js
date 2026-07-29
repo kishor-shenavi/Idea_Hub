@@ -13,7 +13,7 @@ const MentorRequest = require('./models/MentorRequest'); // add at top, alongsid
 const DirectMessage = require('./models/DirectMessage'); // add
 const PORT = process.env.PORT || 5000;
 const Project = require('./models/Project'); // add near top, alongside `const Message = require('./models/Chat');`
-
+const Notification = require('./models/Notification');
 
 const server = http.createServer(app);
 
@@ -78,8 +78,18 @@ socket.on('sendProjectMessage', async (data, callback) => {
     const message = await Message.create({ project: projectId, sender: socket.user.id, content });
     const populated = await Message.findById(message._id).populate('sender', 'name avatar year branch');
 
-    io.to(`project_${projectId}`).emit('newProjectMessage', populated);
-
+  for (const uid of recipientIds) {
+  const notif = await Notification.create({
+    user: uid, type: 'project',
+    title: `💬 ${project.title}`, body: `${populated.sender.name}: ${content.slice(0, 80)}`,
+    to: `/chat/${projectId}/${(populated.sender._id.toString() === project.createdBy.toString() ? project.createdBy.toString() : (uid === project.createdBy.toString() ? populated.sender._id.toString() : project.createdBy.toString()))}`,
+    meta: { projectId },
+  });
+  io.to(`user_${uid}`).emit('newProjectMessageNotification', {
+    projectId, projectTitle: project.title, creatorId: project.createdBy.toString(),
+    senderId: socket.user.id, senderName: populated.sender.name, preview: content.slice(0, 80), notifId: notif._id,
+  });
+}
     // NEW — participant notification, same logic as the REST path in chatController
     const project = await Project.findById(projectId).select('createdBy title');
     if (project) {
@@ -87,11 +97,8 @@ socket.on('sendProjectMessage', async (data, callback) => {
       const recipientIds = new Set(priorSenderIds.map(String));
       if (project.createdBy.toString() !== socket.user.id) recipientIds.add(project.createdBy.toString());
       recipientIds.delete(socket.user.id.toString());
-     recipientIds.forEach(uid => io.to(`user_${uid}`).emit('newProjectMessageNotification', {
-  projectId, projectTitle: project.title, creatorId: project.createdBy.toString(),
-  senderId: socket.user.id, // add this
-  senderName: populated.sender.name, preview: content.slice(0, 80),
-}));
+   
+   const Notification = require('./models/Notification');
     }
 
     if (typeof callback === 'function') callback({ status: 'success', data: populated });
@@ -130,17 +137,24 @@ socket.on('sendMentorMessage', async (data, callback) => {
 
     const message = await DirectMessage.create({ mentorRequest: requestId, sender: socket.user.id, content });
     const populated = await DirectMessage.findById(message._id).populate('sender', 'name avatar');
-
-    io.to(`mentor_${requestId}`).emit('newMentorMessage', populated);
+const otherUserId = mr.student.toString() === socket.user.id ? mr.senior.toString() : mr.student.toString();
+const notif = await Notification.create({
+  user: otherUserId, type: 'mentorChat',
+  title: '💬 New message', body: `${populated.sender.name}: ${content.slice(0, 80)}`,
+  to: `/mentor/chat/${requestId}`, meta: { requestId },
+});
+io.to(`user_${otherUserId}`).emit('mentorMessageNotification', {
+  requestId, senderName: populated.sender.name, preview: content.slice(0, 80), notifId: notif._id,
+});
 
     // lightweight notification to the OTHER participant, even if they're not currently in the chat room —
     // this is what powers the green dot on the Mentor Connect list page
-    const otherUserId = mr.student.toString() === socket.user.id ? mr.senior.toString() : mr.student.toString();
-    io.to(`user_${otherUserId}`).emit('mentorMessageNotification', {
-  requestId,
-  senderName: populated.sender.name,
-  preview: content.slice(0, 80),
-});
+//     const otherUserId = mr.student.toString() === socket.user.id ? mr.senior.toString() : mr.student.toString();
+//     io.to(`user_${otherUserId}`).emit('mentorMessageNotification', {
+//   requestId,
+//   senderName: populated.sender.name,
+//   preview: content.slice(0, 80),
+// });
 
     if (typeof callback === 'function') callback({ status: 'success', data: populated });
   } catch (err) {

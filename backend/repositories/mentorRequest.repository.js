@@ -13,5 +13,15 @@ class MentorRequestRepository {
     return MentorRequest.find({ student: studentId }).populate('senior', 'name avatar branch currentRole company').populate('project', 'title').sort('-createdAt');
   }
   async findById(id) { return MentorRequest.findById(id); }
+
+async findAcceptedSeniorIds(studentId) {
+  const requests = await MentorRequest.find({ student: studentId, status: 'accepted' }).select('senior');
+  return requests.map(r => r.senior.toString());
 }
+
+
+
+}
+
+
 module.exports = new MentorRequestRepository();

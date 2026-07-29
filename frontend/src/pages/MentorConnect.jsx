@@ -3,6 +3,8 @@ import axios from '../api/axios';
 import { useAuth } from '../context/AuthContext';
 import { Link } from 'react-router-dom';
 import { useSocket } from '../context/SocketContext';
+import { useNotifications } from '../context/NotificationContext'; // add import
+
 const statusColor = {
   pending: { bg: '#fef3c7', c: '#92400e' },
   accepted: { bg: '#d1fae5', c: '#065f46' },
@@ -18,6 +20,14 @@ export default function MentorConnect() {
   const [requestModal, setRequestModal] = useState(null); // senior being requested
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
+  
+  const { setActiveView } = useNotifications();
+
+useEffect(() => {
+  setActiveView(tab === 'received' ? 'mentor-received' : null);
+  return () => setActiveView(null);
+}, [tab]);
+
 
   const loadSeniors = async () => {
     const res = await axios.get(`/api/v1/mentor/seniors${search ? `?search=${search}` : ''}`);

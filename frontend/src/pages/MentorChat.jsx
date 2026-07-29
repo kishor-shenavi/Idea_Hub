@@ -3,7 +3,7 @@ import { useParams, Link } from 'react-router-dom';
 import axios from '../api/axios';
 import { useSocket } from '../context/SocketContext';
 import { useAuth } from '../context/AuthContext';
-
+import { useNotifications } from '../context/NotificationContext'; // add import
 export default function MentorChat() {
   const { id } = useParams();
   const socket = useSocket();
@@ -46,6 +46,13 @@ useEffect(() => {
     setText('');
   };
 
+  const { setActiveChat } = useNotifications();
+
+useEffect(() => {
+  setActiveChat({ type: 'mentorChat', id });
+  return () => setActiveChat(null);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+}, [id]);
   return (
     <div className="page-container" style={{ maxWidth: 700 }}>
       <Link to="/mentor" style={{ fontSize: '0.8rem', color: 'var(--brand)', marginBottom: 16, display: 'inline-block' }}>← Back to Mentor Connect</Link>

@@ -39,17 +39,11 @@ exports.getProjects = asyncHandler(async (req, res) => {
 
   res.status(200).json({ success: true, ...result });
 });
-
 exports.getProject = asyncHandler(async (req, res, next) => {
-  // const project = await projectRepository.findById(req.params.id, [
-  //   { path: 'createdBy', select: 'name avatar year branch bio linkedinUrl githubUrl' },
-  //   { path: 'approvedBy', select: 'name' },
-  // ]);
-  const projects = await projectRepository.find(query, {
-  populate: { path: 'createdBy', select: 'name avatar year branch' },
-  sort, skip, limit,
-});
-// And update project.repository.js's find method to pass populate straight to .populate() as-is (Mongoose accepts both string and object forms natively) — no repository code change needed, just make sure every controller call site passes the object form when field-selection matters. This is exactly the kind of subtle regression that's easy to miss in a big batch — flagging it explicitly rather than let you discover it as a silent data-leak bug.
+  const project = await projectRepository.findById(req.params.id, [
+    { path: 'createdBy', select: 'name avatar year branch bio linkedinUrl githubUrl' },
+    { path: 'approvedBy', select: 'name' },
+  ]);
   if (!project) return next(AppError.notFound('Project not found'));
   if (project.status !== 'approved' && (!req.user || (project.createdBy._id.toString() !== req.user.id && req.user.role !== 'admin'))) {
     return next(AppError.forbidden('Not authorized to view this project'));

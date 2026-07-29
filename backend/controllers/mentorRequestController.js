@@ -4,6 +4,7 @@ const userRepository = require('../repositories/user.repository');
 const AppError = require('../utils/AppError');
 const asyncHandler = require('../middlewares/async');
 const directMessageRepository = require('../repositories/directMessage.repository'); // add import
+const notificationRepository = require('../repositories/notification.repository'); // add import
 
 exports.sendRequest = asyncHandler(async (req, res, next) => {
   const { seniorId, projectId, message } = req.body;
@@ -15,9 +16,13 @@ exports.sendRequest = asyncHandler(async (req, res, next) => {
   const request = await mentorRequestRepository.create({ student: req.user.id, senior: seniorId, project: projectId || null, message });
   const populated = await mentorRequestRepository.findByIdPopulated(request._id);
 
-  const io = req.app.get('io');
-  if (io) io.to(`user_${seniorId}`).emit('newMentorRequest', populated); // real-time — senior's Received tab updates instantly
-
+ const notif = await notificationRepository.create({
+  user: seniorId, type: 'mentorRequest',
+  title: '🎯 New mentorship request', body: `${populated.student.name} wants guidance from you`,
+  to: '/mentor', meta: {},
+});
+const io = req.app.get('io');
+if (io) io.to(`user_${seniorId}`).emit('newMentorRequest', { ...populated.toObject(), notifId: notif._id });
   res.status(201).json({ success: true, data: populated });
 });
 
@@ -41,9 +46,16 @@ exports.respondToRequest = asyncHandler(async (req, res, next) => {
   await request.save();
   const populated = await mentorRequestRepository.findByIdPopulated(request._id);
 
+  if (status === 'accepted' || status === 'rejected') {
+  const notif = await notificationRepository.create({
+    user: request.student, type: 'mentorUpdate',
+    title: status === 'accepted' ? '✅ Request accepted' : 'Request declined',
+    body: `${populated.senior.name} ${status === 'accepted' ? 'accepted' : 'declined'} your request`,
+    to: '/mentor', meta: {},
+  });
   const io = req.app.get('io');
-  if (io) io.to(`user_${request.student}`).emit('mentorRequestUpdate', populated); // real-time — student's Sent tab updates instantly
-
+  if (io) io.to(`user_${request.student}`).emit('mentorRequestUpdate', { ...populated.toObject(), notifId: notif._id });
+}
   res.status(200).json({ success: true, data: populated });
 });
 
@@ -56,7 +68,8 @@ exports.cancelRequest = asyncHandler(async (req, res, next) => {
   res.status(200).json({ success: true, data: {} });
 });
 exports.browseSeniors = asyncHandler(async (req, res) => {
-  const seniors = await userRepository.findSeniors(req.query.search, req.user.id); // now excludes self
+  const acceptedIds = await mentorRequestRepository.findAcceptedSeniorIds(req.user.id);
+  const seniors = await userRepository.findSeniors(req.query.search, req.user.id, acceptedIds);
   res.status(200).json({ success: true, count: seniors.length, data: seniors });
 });
 

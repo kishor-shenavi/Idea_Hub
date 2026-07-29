@@ -28,8 +28,8 @@ async find(query) { return User.find(query).sort('-createdAt'); }
 async updateById(id, data) { return User.findByIdAndUpdate(id, data, { new: true, runValidators: true }); }
 async deleteById(id) { return User.findByIdAndDelete(id); }
 
-async findSeniors(search, excludeUserId) {
-  const query = { role: 'senior', _id: { $ne: excludeUserId } };
+async findSeniors(search, excludeUserId, excludeIds = []) {
+  const query = { role: 'senior', _id: { $nin: [excludeUserId, ...excludeIds] } };
   if (search) query.name = { $regex: search, $options: 'i' };
   return User.find(query).select('name avatar branch bio linkedinUrl githubUrl year');
 }

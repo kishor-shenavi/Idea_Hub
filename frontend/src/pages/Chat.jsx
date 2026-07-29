@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useSocket } from '../context/SocketContext';
 import axios from '../api/axios';
-
+import { useNotifications } from '../context/NotificationContext'; // add import
 function isValidId(id) { return /^[a-fA-F0-9]{24}$/.test(id); }
 
 export default function Chat() {
@@ -67,6 +67,16 @@ const [loadError, setLoadError] = useState('');
   }, [socket, projectId, user]);
 
   useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [messages, typing]);
+ 
+
+ const { setActiveChat } = useNotifications(); // add near your other hooks
+
+useEffect(() => {
+  setActiveChat({ type: 'project', id: projectId });
+  return () => setActiveChat(null);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+}, [projectId]);
+   
 
   const handleInput = (val) => {
     setInput(val);
