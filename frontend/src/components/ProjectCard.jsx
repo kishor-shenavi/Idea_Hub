@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import axios from '../api/axios';
+import { getCreatorId, getCreatorName } from '../utils/projectHelpers';
 
 const DIFF_STYLE = {
   beginner: { background: '#d1fae5', color: '#065f46' },
@@ -18,13 +19,13 @@ const CAT_STYLE = {
   other: { background: '#f1f0fb', color: '#6b6890' },
 };
 
-export default function ProjectCard({ project, onDelete, onLike, isMyProject, onClick,hasUnread }) {
+export default function ProjectCard({ project, onDelete, onLike, isMyProject, onClick, hasUnread }) {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [isLiked, setIsLiked] = useState(user ? project.likes?.includes(user.id) : false);
   const [likeCount, setLikeCount] = useState(project.likes?.length || 0);
 
-  const isOwner = user?.id === (typeof project.createdBy === 'object' ? project.createdBy?._id : project.createdBy);
+  const isOwner = user?.id === getCreatorId(project);
 
   const handleLike = async (e) => {
     e.stopPropagation();
@@ -99,7 +100,7 @@ export default function ProjectCard({ project, onDelete, onLike, isMyProject, on
       <div style={{ marginTop: 'auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderTop: '1px solid var(--border)', paddingTop: 12 }}>
         <div>
           <div style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--text)' }}>
-            {typeof project.createdBy === 'object' ? project.createdBy?.name : 'Unknown'}
+            {getCreatorName(project)}
           </div>
           <div style={{ fontSize: '0.72rem', color: 'var(--muted)' }}>
             {new Date(project.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
@@ -113,12 +114,21 @@ export default function ProjectCard({ project, onDelete, onLike, isMyProject, on
           <button onClick={handleShare} style={{ ...iconAction, color: 'var(--muted)' }} title="Share">
             <ShareIcon />
           </button>
-           {user  && (
-    <button onClick={(e) => { e.stopPropagation(); navigate(`/chat/${project._id}/${typeof project.createdBy === 'object' ? project.createdBy._id : project.createdBy}`); }} style={{ ...iconAction, color: 'var(--success)', position: 'relative' }} title="Chat">
-      <ChatIcon />
-      {hasUnread && <span style={{ position: 'absolute', top: -2, right: -2, width: 8, height: 8, borderRadius: '50%', background: '#22c55e', border: '1.5px solid var(--surface)' }} />}
-    </button>
-  )}
+          {user && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                const creatorId = getCreatorId(project);
+                if (!creatorId) return; // can't open a chat with a deleted user
+                navigate(`/chat/${project._id}/${creatorId}`);
+              }}
+              style={{ ...iconAction, color: 'var(--success)', position: 'relative' }}
+              title="Chat"
+            >
+              <ChatIcon />
+              {hasUnread && <span style={{ position: 'absolute', top: -2, right: -2, width: 8, height: 8, borderRadius: '50%', background: '#22c55e', border: '1.5px solid var(--surface)' }} />}
+            </button>
+          )}
         </div>
       </div>
     </div>

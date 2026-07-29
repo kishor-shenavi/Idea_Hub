@@ -5,6 +5,8 @@ import ProjectCard from '../components/ProjectCard';
 import { useAuth } from '../context/AuthContext';
 import LoadingSpinner from '../components/LoadingSpinner';
 import { useSocket } from '../context/SocketContext'; // add
+import { getCreatorId, getCreatorName } from '../utils/projectHelpers';
+
 const CATEGORIES = ['web', 'mobile', 'desktop', 'ai', 'iot', 'other'];
 const DIFFICULTIES = ['beginner', 'intermediate', 'advanced'];
 
@@ -29,23 +31,23 @@ export default function Projects() {
 
 
   const socket = useSocket();
-const [unreadProjectIds, setUnreadProjectIds] = useState(new Set());
+  const [unreadProjectIds, setUnreadProjectIds] = useState(new Set());
 
-useEffect(() => {
-  if (!user) return;
-  axios.get('/api/v1/chat/unread').then(res => {
-    setUnreadProjectIds(new Set(Object.keys(res.data.data)));
-  });
-}, [user]);
+  useEffect(() => {
+    if (!user) return;
+    axios.get('/api/v1/chat/unread').then(res => {
+      setUnreadProjectIds(new Set(Object.keys(res.data.data)));
+    });
+  }, [user]);
 
-useEffect(() => {
-  if (!socket) return;
-  const handleNotif = (payload) => {
-    setUnreadProjectIds(prev => new Set(prev).add(payload.projectId));
-  };
-  socket.on('newProjectMessageNotification', handleNotif);
-  return () => socket.off('newProjectMessageNotification', handleNotif);
-}, [socket]);
+  useEffect(() => {
+    if (!socket) return;
+    const handleNotif = (payload) => {
+      setUnreadProjectIds(prev => new Set(prev).add(payload.projectId));
+    };
+    socket.on('newProjectMessageNotification', handleNotif);
+    return () => socket.off('newProjectMessageNotification', handleNotif);
+  }, [socket]);
 
   useEffect(() => {
     if (location.state?.showMineOnly) setTab('my');
@@ -177,14 +179,14 @@ useEffect(() => {
               const isLast = i === displayed.length - 1 && tab === 'all';
               return (
                 <div key={p._id} ref={isLast ? lastCardRef : null}>
-              <ProjectCard
-  project={p}
-  onLike={handleLike}
-  onDelete={handleDelete}
-  isMyProject={tab === 'my'}
-  onClick={() => setSelectedProject(prev => prev?._id === p._id ? null : p)}
-  hasUnread={unreadProjectIds.has(p._id)}
-/>
+                  <ProjectCard
+                    project={p}
+                    onLike={handleLike}
+                    onDelete={handleDelete}
+                    isMyProject={tab === 'my'}
+                    onClick={() => setSelectedProject(prev => prev?._id === p._id ? null : p)}
+                    hasUnread={unreadProjectIds.has(p._id)}
+                  />
                 </div>
               );
             })}
@@ -262,11 +264,11 @@ useEffect(() => {
           {/* Footer */}
           <div style={{ padding: '16px 24px', borderTop: '1.5px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <div>
-              <div style={{ fontWeight: 600, fontSize: '0.875rem' }}>{typeof selectedProject.createdBy === 'object' ? selectedProject.createdBy?.name : 'Unknown'}</div>
+              <div style={{ fontWeight: 600, fontSize: '0.875rem' }}>{getCreatorName(selectedProject)}</div>
               <div style={{ fontSize: '0.75rem', color: 'var(--muted)' }}>{new Date(selectedProject.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}</div>
             </div>
-            {user && user.id !== (typeof selectedProject.createdBy === 'object' ? selectedProject.createdBy._id : selectedProject.createdBy) && (
-              <button className="btn btn-outline" style={{ fontSize: '0.8rem' }} onClick={() => navigate(`/chat/${selectedProject._id}/${typeof selectedProject.createdBy === 'object' ? selectedProject.createdBy._id : selectedProject.createdBy}`)}>
+            {user && getCreatorId(selectedProject) && user.id !== getCreatorId(selectedProject) && (
+              <button className="btn btn-outline" style={{ fontSize: '0.8rem' }} onClick={() => navigate(`/chat/${selectedProject._id}/${getCreatorId(selectedProject)}`)}>
                 💬 Chat with senior
               </button>
             )}

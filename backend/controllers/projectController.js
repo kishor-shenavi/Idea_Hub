@@ -1,11 +1,8 @@
-// backend/controllers/projectController.js
 const projectRepository = require('../repositories/project.repository');
 const commentRepository = require('../repositories/comment.repository');
 const AppError = require('../utils/AppError');
 const asyncHandler = require('../middlewares/async');
 const { cacheAside, invalidatePattern } = require('../utils/cache');
-
-// add this import at the top, alongside your existing requires
 
 exports.getProjects = asyncHandler(async (req, res) => {
   let query = { status: 'approved' };
@@ -22,10 +19,9 @@ exports.getProjects = asyncHandler(async (req, res) => {
   const page = parseInt(req.query.page) || 1;
   const limit = parseInt(req.query.limit) || 12;
   const skip = (page - 1) * limit;
-  const sort = req.query.sort === 'likes' ? { likesCount: -1 } : { createdAt: -1 };
+  const sort = req.query.sort === 'likes' ? { likesCount: -1 } : { createdAt: -1 }; // now a real, indexable field — plain sort works correctly
 
-  // cache key encodes every param that changes the result — admin sees unapproved projects too, so isAdmin is part of the key
-  const isAdmin = !!!(req.user && req.user.role === 'admin');
+  const isAdmin = !!(req.user && req.user.role === 'admin');
   const cacheKey = `projects:list:${isAdmin}:${req.query.category || ''}:${req.query.difficulty || ''}:${req.query.search || ''}:${page}:${limit}:${req.query.sort || 'default'}`;
 
   const result = await cacheAside(cacheKey, 60, async () => {
@@ -39,6 +35,7 @@ exports.getProjects = asyncHandler(async (req, res) => {
 
   res.status(200).json({ success: true, ...result });
 });
+
 exports.getProject = asyncHandler(async (req, res, next) => {
   const project = await projectRepository.findById(req.params.id, [
     { path: 'createdBy', select: 'name avatar year branch bio linkedinUrl githubUrl' },
@@ -89,9 +86,14 @@ exports.likeProject = asyncHandler(async (req, res, next) => {
   const project = await projectRepository.findById(req.params.id);
   if (!project) return next(AppError.notFound('Project not found'));
   const alreadyLiked = project.likes.includes(req.user.id);
-  if (alreadyLiked) project.likes.pull(req.user.id); else project.likes.push(req.user.id);
+  if (alreadyLiked) {
+    project.likes.pull(req.user.id);
+  } else {
+    project.likes.push(req.user.id);
+  }
+  project.likesCount = project.likes.length; // keep the denormalized counter exactly in sync with the real array, every time
   await project.save();
-  await invalidatePattern('projects:list:*');
+  await invalidatePattern('projects:list:*'); // sort=likes order can change on every like/unlike, so the cache must clear
   res.status(200).json({ success: true, isLiked: !alreadyLiked, likeCount: project.likes.length });
 });
 

@@ -78,27 +78,29 @@ socket.on('sendProjectMessage', async (data, callback) => {
     const message = await Message.create({ project: projectId, sender: socket.user.id, content });
     const populated = await Message.findById(message._id).populate('sender', 'name avatar year branch');
 
-  for (const uid of recipientIds) {
-  const notif = await Notification.create({
-    user: uid, type: 'project',
-    title: `💬 ${project.title}`, body: `${populated.sender.name}: ${content.slice(0, 80)}`,
-    to: `/chat/${projectId}/${(populated.sender._id.toString() === project.createdBy.toString() ? project.createdBy.toString() : (uid === project.createdBy.toString() ? populated.sender._id.toString() : project.createdBy.toString()))}`,
-    meta: { projectId },
-  });
-  io.to(`user_${uid}`).emit('newProjectMessageNotification', {
-    projectId, projectTitle: project.title, creatorId: project.createdBy.toString(),
-    senderId: socket.user.id, senderName: populated.sender.name, preview: content.slice(0, 80), notifId: notif._id,
-  });
-}
-    // NEW — participant notification, same logic as the REST path in chatController
+    // live broadcast to anyone currently viewing this project's chat — this was missing entirely
+    io.to(`project_${projectId}`).emit('newProjectMessage', populated);
+
+    // persistent notification for anyone who isn't currently viewing it
     const project = await Project.findById(projectId).select('createdBy title');
     if (project) {
       const priorSenderIds = await Message.distinct('sender', { project: projectId, sender: { $ne: socket.user.id } });
       const recipientIds = new Set(priorSenderIds.map(String));
       if (project.createdBy.toString() !== socket.user.id) recipientIds.add(project.createdBy.toString());
       recipientIds.delete(socket.user.id.toString());
-   
-   const Notification = require('./models/Notification');
+
+      for (const uid of recipientIds) {
+        const notif = await Notification.create({
+          user: uid, type: 'project',
+          title: `💬 ${project.title}`, body: `${populated.sender.name}: ${content.slice(0, 80)}`,
+          to: `/chat/${projectId}/${socket.user.id === project.createdBy.toString() ? socket.user.id : project.createdBy.toString()}`,
+          meta: { projectId },
+        });
+        io.to(`user_${uid}`).emit('newProjectMessageNotification', {
+          projectId, projectTitle: project.title, creatorId: project.createdBy.toString(),
+          senderId: socket.user.id, senderName: populated.sender.name, preview: content.slice(0, 80), notifId: notif._id,
+        });
+      }
     }
 
     if (typeof callback === 'function') callback({ status: 'success', data: populated });

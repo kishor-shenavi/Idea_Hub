@@ -21,6 +21,7 @@ const projectSchema = new mongoose.Schema({
   demoUrl: { type: String },
 
   likes: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
+  likesCount: { type: Number, default: 0 }, // denormalized — kept in sync in likeProject, avoids sorting by array length
   shares: { type: Number, default: 0 },
 
   // Roadmap steps for this project
