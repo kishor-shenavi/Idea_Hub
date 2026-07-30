@@ -37,12 +37,15 @@ import MentorConnect from './pages/MentorConnect';
 import MentorChat from './pages/MentorChat';
 import { NotificationProvider } from './context/NotificationContext';
 import GlobalNotifications from './components/GlobalNotifications';
+import E2EEBootstrap from './components/E2EEBootstrap';
+
 import './index.css';
 
 function AppContent() {
   return (
     <>
         <NotificationProvider>
+         <E2EEBootstrap />
       <Navbar />
           <GlobalNotifications />
       <Routes>

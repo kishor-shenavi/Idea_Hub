@@ -94,3 +94,11 @@ exports.markMentorChatRead = asyncHandler(async (req, res) => {
   await directMessageRepository.markRead(req.params.id, req.user.id);
   res.status(200).json({ success: true });
 });
+
+exports.getRequestById = asyncHandler(async (req, res, next) => {
+  const request = await mentorRequestRepository.findByIdPopulated(req.params.id);
+  if (!request) return next(AppError.notFound('Request not found'));
+  const isParticipant = [request.student._id.toString(), request.senior._id.toString()].includes(req.user.id);
+  if (!isParticipant) return next(AppError.forbidden());
+  res.status(200).json({ success: true, data: request });
+});

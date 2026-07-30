@@ -1,8 +1,7 @@
 const REQUIRED_VARS = [
   'MONGO_URL', 'JWT_SECRET', 'CLIENT_URL',
   'GITHUB_CLIENT_ID', 'GITHUB_CLIENT_SECRET',
-  'ASSEMBLYAI_API_KEY',
-  //'GROQ_API_KEY', // at least one AI provider must exist — checked separately below
+  'ASSEMBLYAI_API_KEY', 'MESSAGE_ENCRYPTION_KEY',
 ];
 
 const AI_PROVIDER_VARS = ['GROQ_API_KEY', 'OPENROUTER_API_KEY', 'GEMINI_API_KEY'];
@@ -44,6 +43,6 @@ module.exports = {
   },
 
   assemblyai: { apiKey: process.env.ASSEMBLYAI_API_KEY },
-
+ messageEncryptionKey: process.env.MESSAGE_ENCRYPTION_KEY,
   isProd: process.env.NODE_ENV === 'production',
 };

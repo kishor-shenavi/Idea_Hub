@@ -6,7 +6,7 @@ const { sendRequestSchema, respondSchema } = require('../validators/mentor.schem
 const {
   sendRequest, getReceivedRequests, getSentRequests,
   respondToRequest, cancelRequest, browseSeniors, getMentorMessages,
-  markMentorChatRead, getUnreadMentorChats,
+  markMentorChatRead, getUnreadMentorChats,getRequestById
 } = require('../controllers/mentorRequestController');
 
 router.use(protect);
@@ -20,5 +20,7 @@ router.get('/seniors', browseSeniors);
 router.get('/:id/messages', getMentorMessages);
 router.get('/unread', getUnreadMentorChats);
 router.put('/:id/messages/read', markMentorChatRead);
+
+router.get('/requests/:id', getRequestById);
 
 module.exports = router;

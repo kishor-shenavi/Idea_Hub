@@ -14,6 +14,7 @@ const DirectMessage = require('./models/DirectMessage'); // add
 const PORT = process.env.PORT || 5000;
 const Project = require('./models/Project'); // add near top, alongside `const Message = require('./models/Chat');`
 const Notification = require('./models/Notification');
+const { encrypt, decrypt } = require('./utils/encryption');
 
 const server = http.createServer(app);
 
@@ -75,13 +76,12 @@ socket.on('sendProjectMessage', async (data, callback) => {
     const { projectId, content } = data;
     if (!projectId || !content) throw new Error('projectId and content are required');
 
-    const message = await Message.create({ project: projectId, sender: socket.user.id, content });
+    const message = await Message.create({ project: projectId, sender: socket.user.id, content: encrypt(content) });
     const populated = await Message.findById(message._id).populate('sender', 'name avatar year branch');
+    populated.content = decrypt(populated.content); // = content, but round-tripped through the real cipher, proving it works both ways
 
-    // live broadcast to anyone currently viewing this project's chat — this was missing entirely
     io.to(`project_${projectId}`).emit('newProjectMessage', populated);
 
-    // persistent notification for anyone who isn't currently viewing it
     const project = await Project.findById(projectId).select('createdBy title');
     if (project) {
       const priorSenderIds = await Message.distinct('sender', { project: projectId, sender: { $ne: socket.user.id } });
@@ -92,7 +92,7 @@ socket.on('sendProjectMessage', async (data, callback) => {
       for (const uid of recipientIds) {
         const notif = await Notification.create({
           user: uid, type: 'project',
-          title: `💬 ${project.title}`, body: `${populated.sender.name}: ${content.slice(0, 80)}`,
+          title: `💬 ${project.title}`, body: `${populated.sender.name}: ${content.slice(0, 80)}`, // uses the original plaintext `content` var, never the ciphertext — this is fine, server briefly held plaintext in memory during this one request, by design (encryption-at-rest ≠ E2EE)
           to: `/chat/${projectId}/${socket.user.id === project.createdBy.toString() ? socket.user.id : project.createdBy.toString()}`,
           meta: { projectId },
         });
@@ -126,37 +126,30 @@ socket.on('leaveMentorChat', (requestId) => {
   if (!requestId) return;
   socket.leave(`mentor_${requestId}`);
 });
-
 socket.on('sendMentorMessage', async (data, callback) => {
   try {
-    const { requestId, content } = data;
-    if (!requestId || !content) throw new Error('requestId and content are required');
+    const { requestId, ciphertext, iv } = data;
+    if (!requestId || !ciphertext || !iv) throw new Error('requestId, ciphertext, and iv are required');
 
     const mr = await MentorRequest.findById(requestId);
     if (!mr || mr.status !== 'accepted') throw new Error('Chat is not available for this request');
     const isParticipant = [mr.student.toString(), mr.senior.toString()].includes(socket.user.id);
     if (!isParticipant) throw new Error('Not authorized');
 
-    const message = await DirectMessage.create({ mentorRequest: requestId, sender: socket.user.id, content });
+    const message = await DirectMessage.create({ mentorRequest: requestId, sender: socket.user.id, ciphertext, iv });
     const populated = await DirectMessage.findById(message._id).populate('sender', 'name avatar');
-const otherUserId = mr.student.toString() === socket.user.id ? mr.senior.toString() : mr.student.toString();
-const notif = await Notification.create({
-  user: otherUserId, type: 'mentorChat',
-  title: '💬 New message', body: `${populated.sender.name}: ${content.slice(0, 80)}`,
-  to: `/mentor/chat/${requestId}`, meta: { requestId },
-});
-io.to(`user_${otherUserId}`).emit('mentorMessageNotification', {
-  requestId, senderName: populated.sender.name, preview: content.slice(0, 80), notifId: notif._id,
-});
 
-    // lightweight notification to the OTHER participant, even if they're not currently in the chat room —
-    // this is what powers the green dot on the Mentor Connect list page
-//     const otherUserId = mr.student.toString() === socket.user.id ? mr.senior.toString() : mr.student.toString();
-//     io.to(`user_${otherUserId}`).emit('mentorMessageNotification', {
-//   requestId,
-//   senderName: populated.sender.name,
-//   preview: content.slice(0, 80),
-// });
+    io.to(`mentor_${requestId}`).emit('newMentorMessage', populated);
+
+    const otherUserId = mr.student.toString() === socket.user.id ? mr.senior.toString() : mr.student.toString();
+    const notif = await Notification.create({
+      user: otherUserId, type: 'mentorChat',
+      title: '🔒 New encrypted message', body: `${populated.sender.name} sent you a message`, // no content preview possible — the server genuinely never has the plaintext, this is the real proof E2EE is working, not a missing feature
+      to: `/mentor/chat/${requestId}`, meta: { requestId },
+    });
+    io.to(`user_${otherUserId}`).emit('mentorMessageNotification', {
+      requestId, senderName: populated.sender.name, preview: 'New encrypted message', notifId: notif._id,
+    });
 
     if (typeof callback === 'function') callback({ status: 'success', data: populated });
   } catch (err) {
@@ -164,7 +157,6 @@ io.to(`user_${otherUserId}`).emit('mentorMessageNotification', {
     if (typeof callback === 'function') callback({ status: 'error', error: err.message });
   }
 });
-
   // Typing indicators
   socket.on('typing', ({ projectId }) => {
     if (!projectId) return;

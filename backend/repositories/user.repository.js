@@ -33,6 +33,11 @@ async findSeniors(search, excludeUserId, excludeIds = []) {
   if (search) query.name = { $regex: search, $options: 'i' };
   return User.find(query).select('name avatar branch bio linkedinUrl githubUrl year');
 }
+
+async findPublicKey(userId) {
+  const user = await User.findById(userId).select('publicKeyJwk name');
+  return user;
+}
 }
 
 

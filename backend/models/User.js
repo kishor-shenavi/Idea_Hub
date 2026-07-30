@@ -32,6 +32,8 @@ githubAccessToken: { type: String, select: false }, // needed to call GitHub API
   // Bookmarks
   bookmarkedProjects: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Project' }],
   bookmarkedPaths: [{ type: mongoose.Schema.Types.ObjectId, ref: 'SeniorPath' }],
+ 
+  publicKeyJwk: { type: mongoose.Schema.Types.Mixed }, // this user's ECDH public key, uploaded by their browser — safe to store, public keys are meant to be public
 
   createdAt: { type: Date, default: Date.now },
 });

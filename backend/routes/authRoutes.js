@@ -5,12 +5,11 @@ const router = express.Router();
 const { protect } = require('../middlewares/auth');
 const {
   sendOtp, verifyOtp, register, login, googleLogin,
-  getMe, updateMe, changePassword,logout
+  getMe, updateMe, changePassword, logout, updatePublicKey, getPublicKey,
 } = require('../controllers/authController');
-
+const { loginSchema, registerSchema, sendOtpSchema, verifyOtpSchema, googleLoginSchema, changePasswordSchema, publicKeySchema } = require('../validators/auth.schema');
 // backend/routes/authRoutes.js — add
 const validate = require('../middlewares/validate');
-const { loginSchema, registerSchema, sendOtpSchema, verifyOtpSchema, googleLoginSchema, changePasswordSchema } = require('../validators/auth.schema');
 router.post('/sendotp', validate(sendOtpSchema), sendOtp);
 router.post('/verifyotp', validate(verifyOtpSchema), verifyOtp);
 router.post('/register', validate(registerSchema), register);
@@ -53,5 +52,8 @@ router.get('/github/callback', (req, res, next) => {
 router.get('/me', protect, getMe);
 router.patch('/updateme', protect, updateMe);
 router.patch('/changepassword', protect, validate(changePasswordSchema), changePassword);
+
+router.put('/public-key', protect, validate(publicKeySchema), updatePublicKey);
+router.get('/public-key/:userId', protect, getPublicKey);
 
 module.exports = router;

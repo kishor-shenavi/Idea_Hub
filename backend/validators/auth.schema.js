@@ -18,5 +18,9 @@ const googleLoginSchema = z.object({ token: z.string().min(1, 'Google token requ
 const changePasswordSchema = z.object({
   currentPassword: z.string().min(1),
   newPassword: z.string().min(6, 'New password must be at least 6 characters'),
+
 });
-module.exports = { loginSchema, registerSchema, sendOtpSchema, verifyOtpSchema, googleLoginSchema, changePasswordSchema };
+const publicKeySchema = z.object({
+  publicKey: z.object({}).passthrough(), // JWK shape varies by curve/algorithm — just require it's an object, not a strict shape
+});
+module.exports = { loginSchema, registerSchema, sendOtpSchema, verifyOtpSchema, googleLoginSchema, changePasswordSchema, publicKeySchema };

@@ -3,7 +3,8 @@ const mongoose = require('mongoose');
 const directMessageSchema = new mongoose.Schema({
   mentorRequest: { type: mongoose.Schema.Types.ObjectId, ref: 'MentorRequest', required: true },
   sender: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-  content: { type: String, required: true, trim: true, maxlength: 2000 },
+  ciphertext: { type: String, required: true },
+  iv: { type: String, required: true },
   readBy: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
   createdAt: { type: Date, default: Date.now },
 });

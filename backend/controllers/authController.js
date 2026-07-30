@@ -95,3 +95,15 @@ exports.logout = asyncHandler(async (req, res) => {
 
   res.status(200).json({ success: true, message: 'Logged out successfully' });
 });
+
+exports.updatePublicKey = asyncHandler(async (req, res) => {
+  await userRepository.updateById(req.user.id, { publicKeyJwk: req.body.publicKey });
+  res.status(200).json({ success: true });
+});
+
+exports.getPublicKey = asyncHandler(async (req, res, next) => {
+  const user = await userRepository.findPublicKey(req.params.userId);
+  if (!user) return next(AppError.notFound('User not found'));
+  if (!user.publicKeyJwk) return next(AppError.validation('This user has not set up encrypted chat yet'));
+  res.status(200).json({ success: true, data: { publicKey: user.publicKeyJwk, name: user.name } });
+});
